@@ -14,12 +14,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 
+// Database connection (singleton) - Initialize before routes
+const dbConnection = getDatabase();
+
 // Routes
 app.get('/', (req, res) => {
   res.json({
     success: true,
     message: 'Bienvenido a Fluxe API',
     version: '1.0.0',
+    orm: 'Prisma ORM',
     endpoints: {
       health: '/health',
       api: '/api',
@@ -31,23 +35,15 @@ app.get('/', (req, res) => {
 
 app.get('/health', async (req, res) => {
   try {
-    // Verificar conexión a la base de datos
-    const db = dbConnection.getConnection();
-    let dbStatus = 'disconnected';
-    
-    if (db) {
-      try {
-        await db.query('SELECT 1');
-        dbStatus = 'connected';
-      } catch (error) {
-        dbStatus = 'error';
-      }
-    }
+    // Verificar conexión a la base de datos con Prisma
+    const isConnected = await dbConnection.healthCheck();
+    const dbStatus = isConnected ? 'connected' : 'disconnected';
 
     res.json({
       success: true,
       message: 'Server is running',
       database: dbStatus,
+      orm: 'Prisma',
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
@@ -65,14 +61,11 @@ app.use('/api', routes);
 app.use(notFound);
 app.use(errorHandler);
 
-// Database connection (singleton)
-const dbConnection = getDatabase();
-
 // Start server
 const startServer = async () => {
   try {
     await dbConnection.connect();
-    
+
     app.listen(PORT, () => {
       console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
       console.log(`📝 Health check: http://localhost:${PORT}/health`);

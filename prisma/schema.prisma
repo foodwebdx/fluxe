@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model clientes {
+  id_cliente            Int     @id @default(autoincrement())
+  tipo_identificacion   String  @db.VarChar(20)
+  numero_identificacion String  @db.VarChar(50)
+  nombre_completo       String  @db.VarChar(255)
+  telefono_contacto     String  @db.VarChar(50)
+  correo_electronico    String  @unique @db.VarChar(255)
+  tipo_direccion        String? @db.VarChar(50)
+  direccion             String?
+  notas_cliente         String?
+
+  @@unique([tipo_identificacion, numero_identificacion])
+}
