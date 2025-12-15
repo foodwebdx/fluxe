@@ -1,24 +1,30 @@
-const DatabaseConnection = require('./DatabaseConnection');
+const PrismaService = require('./PrismaService');
 
-// Instancia singleton de la conexión
-let dbInstance = null;
+// Instancia singleton de Prisma
+let prismaInstance = null;
 
 const getDatabase = () => {
-  if (!dbInstance) {
-    dbInstance = new DatabaseConnection();
+  if (!prismaInstance) {
+    prismaInstance = new PrismaService();
   }
-  return dbInstance;
+  return prismaInstance;
 };
 
-// Función para obtener el pool directamente (para repositorios)
-const getPool = () => {
+// Función para obtener el cliente Prisma directamente (para repositorios)
+const getPrisma = () => {
   const db = getDatabase();
-  const pool = db.getConnection();
-  if (!pool) {
-    throw new Error('La base de datos no está conectada. Asegúrate de que el servidor se haya iniciado correctamente.');
+  const prisma = db.getClient();
+  if (!prisma) {
+    throw new Error('Prisma no está conectado. Asegúrate de que el servidor se haya iniciado correctamente.');
   }
-  return pool;
+  return prisma;
 };
 
-module.exports = { getDatabase, getPool };
+// Mantener getPool para compatibilidad con código antiguo (deprecated)
+const getPool = () => {
+  console.warn('⚠️  getPool() está deprecated. Usa getPrisma() para acceder al cliente Prisma.');
+  return getPrisma();
+};
+
+module.exports = { getDatabase, getPrisma, getPool };
 
