@@ -8,7 +8,13 @@
     "start": "node backend/index.js",
     "test": "jest",
     "lint": "eslint backend/**/*.js",
-    "lint:fix": "eslint backend/**/*.js --fix"
+    "lint:fix": "eslint backend/**/*.js --fix",
+    "prisma:generate": "prisma generate",
+    "prisma:studio": "prisma studio",
+    "prisma:pull": "prisma db pull",
+    "prisma:push": "prisma db push",
+    "prisma:migrate": "prisma migrate dev",
+    "postinstall": "prisma generate"
   },
   "keywords": [
     "clean-architecture",
@@ -18,9 +24,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/adapter-pg": "^7.1.0",
+    "@prisma/client": "^7.1.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "prisma": "^7.1.0"
   },
   "devDependencies": {
     "eslint": "^8.54.0",

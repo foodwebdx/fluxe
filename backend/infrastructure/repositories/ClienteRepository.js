@@ -1,33 +1,32 @@
 const IClienteRepository = require('../../domain/repositories/IClienteRepository');
 const Cliente = require('../../domain/entities/Cliente');
-const { getPool } = require('../database/db');
+const { getPrisma } = require('../database/db');
 
 class ClienteRepository extends IClienteRepository {
   constructor() {
     super();
   }
 
-  // Obtener el pool de forma lazy (cuando se necesite)
-  getPool() {
-    const pool = getPool();
-    if (!pool) {
-      throw new Error('La base de datos no está conectada. Asegúrate de que el servidor se haya iniciado correctamente.');
+  // Obtener el cliente Prisma de forma lazy (cuando se necesite)
+  getPrisma() {
+    const prisma = getPrisma();
+    if (!prisma) {
+      throw new Error('Prisma no está conectado. Asegúrate de que el servidor se haya iniciado correctamente.');
     }
-    return pool;
+    return prisma;
   }
 
   async findById(id) {
     try {
-      const result = await this.getPool().query(
-        'SELECT * FROM clientes WHERE id_cliente = $1',
-        [id]
-      );
-      
-      if (result.rows.length === 0) {
+      const cliente = await this.getPrisma().clientes.findUnique({
+        where: { id_cliente: parseInt(id) }
+      });
+
+      if (!cliente) {
         return null;
       }
-      
-      return new Cliente(result.rows[0]);
+
+      return new Cliente(cliente);
     } catch (error) {
       console.error('Error en findById:', error);
       throw error;
@@ -36,11 +35,11 @@ class ClienteRepository extends IClienteRepository {
 
   async findAll() {
     try {
-      const result = await this.getPool().query(
-        'SELECT * FROM clientes ORDER BY id_cliente DESC'
-      );
-      
-      return result.rows.map(row => new Cliente(row));
+      const clientes = await this.getPrisma().clientes.findMany({
+        orderBy: { id_cliente: 'desc' }
+      });
+
+      return clientes.map(cliente => new Cliente(cliente));
     } catch (error) {
       console.error('Error en findAll:', error);
       throw error;
@@ -49,32 +48,20 @@ class ClienteRepository extends IClienteRepository {
 
   async create(cliente) {
     try {
-      const result = await this.getPool().query(
-        `INSERT INTO clientes (
-          tipo_identificacion, 
-          numero_identificacion, 
-          nombre_completo, 
-          telefono_contacto, 
-          correo_electronico, 
-          tipo_direccion, 
-          direccion, 
-          notas_cliente
-        ) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
-         RETURNING *`,
-        [
-          cliente.tipo_identificacion,
-          cliente.numero_identificacion,
-          cliente.nombre_completo,
-          cliente.telefono_contacto,
-          cliente.correo_electronico,
-          cliente.tipo_direccion,
-          cliente.direccion,
-          cliente.notas_cliente
-        ]
-      );
-      
-      return new Cliente(result.rows[0]);
+      const nuevoCliente = await this.getPrisma().clientes.create({
+        data: {
+          tipo_identificacion: cliente.tipo_identificacion,
+          numero_identificacion: cliente.numero_identificacion,
+          nombre_completo: cliente.nombre_completo,
+          telefono_contacto: cliente.telefono_contacto,
+          correo_electronico: cliente.correo_electronico,
+          tipo_direccion: cliente.tipo_direccion || null,
+          direccion: cliente.direccion || null,
+          notas_cliente: cliente.notas_cliente || null
+        }
+      });
+
+      return new Cliente(nuevoCliente);
     } catch (error) {
       console.error('Error en create:', error);
       throw error;
@@ -83,11 +70,9 @@ class ClienteRepository extends IClienteRepository {
 
   async update(id, clienteData) {
     try {
-      const fields = [];
-      const values = [];
-      let paramCount = 1;
+      // Crear objeto con solo los campos que están definidos
+      const dataToUpdate = {};
 
-      // Mapear los campos permitidos
       const allowedFields = [
         'tipo_identificacion',
         'numero_identificacion',
@@ -101,31 +86,25 @@ class ClienteRepository extends IClienteRepository {
 
       allowedFields.forEach(field => {
         if (clienteData[field] !== undefined) {
-          fields.push(`${field} = $${paramCount}`);
-          values.push(clienteData[field]);
-          paramCount++;
+          dataToUpdate[field] = clienteData[field];
         }
       });
 
-      if (fields.length === 0) {
+      if (Object.keys(dataToUpdate).length === 0) {
         throw new Error('No hay campos para actualizar');
       }
 
-      values.push(id);
-      const result = await this.getPool().query(
-        `UPDATE clientes 
-         SET ${fields.join(', ')} 
-         WHERE id_cliente = $${paramCount} 
-         RETURNING *`,
-        values
-      );
+      const clienteActualizado = await this.getPrisma().clientes.update({
+        where: { id_cliente: parseInt(id) },
+        data: dataToUpdate
+      });
 
-      if (result.rows.length === 0) {
+      return new Cliente(clienteActualizado);
+    } catch (error) {
+      if (error.code === 'P2025') {
+        // Cliente no encontrado
         return null;
       }
-
-      return new Cliente(result.rows[0]);
-    } catch (error) {
       console.error('Error en update:', error);
       throw error;
     }
@@ -133,13 +112,16 @@ class ClienteRepository extends IClienteRepository {
 
   async delete(id) {
     try {
-      const result = await this.getPool().query(
-        'DELETE FROM clientes WHERE id_cliente = $1 RETURNING id_cliente',
-        [id]
-      );
-      
-      return result.rows.length > 0;
+      await this.getPrisma().clientes.delete({
+        where: { id_cliente: parseInt(id) }
+      });
+
+      return true;
     } catch (error) {
+      if (error.code === 'P2025') {
+        // Cliente no encontrado
+        return false;
+      }
       console.error('Error en delete:', error);
       throw error;
     }
