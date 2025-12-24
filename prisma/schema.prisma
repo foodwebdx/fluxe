@@ -8,15 +8,147 @@ datasource db {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model clientes {
-  id_cliente            Int     @id @default(autoincrement())
-  tipo_identificacion   String  @db.VarChar(20)
-  numero_identificacion String  @db.VarChar(50)
-  nombre_completo       String  @db.VarChar(255)
-  telefono_contacto     String  @db.VarChar(50)
-  correo_electronico    String  @unique @db.VarChar(255)
-  tipo_direccion        String? @db.VarChar(50)
+  id_cliente            Int         @id @default(autoincrement())
+  tipo_identificacion   String      @db.VarChar(20)
+  numero_identificacion String      @db.VarChar(50)
+  nombre_completo       String      @db.VarChar(255)
+  telefono_contacto     String      @db.VarChar(50)
+  correo_electronico    String      @unique @db.VarChar(255)
+  tipo_direccion        String?     @db.VarChar(50)
   direccion             String?
   notas_cliente         String?
+  ordenes               ordenes[]
+  productos             productos[]
 
   @@unique([tipo_identificacion, numero_identificacion])
+}
+
+model comentarios_estado {
+  id_comentario           Int                     @id @default(autoincrement())
+  id_historial            Int
+  id_usuario              Int
+  texto_comentario        String
+  fecha_hora_comentario   DateTime                @default(now()) @db.Timestamp(6)
+  historial_estados_orden historial_estados_orden @relation(fields: [id_historial], references: [id_historial], onDelete: Cascade, onUpdate: NoAction, map: "fk_comentarios_historial")
+  usuarios                usuarios                @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_comentarios_usuario")
+}
+
+model estados {
+  id_estado               Int                       @id @default(autoincrement())
+  nombre_estado           String                    @unique @db.VarChar(100)
+  descripcion_estado      String?
+  evidencias              evidencias[]
+  flujos_estados          flujos_estados[]
+  historial_estados_orden historial_estados_orden[]
+  ordenes                 ordenes[]
+}
+
+model evidencias {
+  id_evidencia            Int      @id @default(autoincrement())
+  id_orden                Int
+  id_estado               Int
+  id_usuario              Int
+  tipo_evidencia          String   @db.VarChar(50)
+  s3_key                  String   @db.VarChar(255)
+  nombre_archivo_original String?  @db.VarChar(255)
+  comentario              String?
+  fecha_subida            DateTime @default(now()) @db.Timestamp(6)
+  estados                 estados  @relation(fields: [id_estado], references: [id_estado], onDelete: NoAction, onUpdate: NoAction, map: "fk_evidencias_estado")
+  ordenes                 ordenes  @relation(fields: [id_orden], references: [id_orden], onDelete: Cascade, onUpdate: NoAction, map: "fk_evidencias_orden")
+  usuarios                usuarios @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_evidencias_usuario")
+}
+
+model flujos {
+  id_flujo          Int              @id @default(autoincrement())
+  nombre_flujo      String           @unique @db.VarChar(100)
+  descripcion_flujo String?
+  activo            Boolean          @default(true)
+  flujos_estados    flujos_estados[]
+  ordenes           ordenes[]
+}
+
+model flujos_estados {
+  id_flujo    Int
+  id_estado   Int
+  posicion    Int
+  obligatorio Boolean @default(true)
+  estados     estados @relation(fields: [id_estado], references: [id_estado], onDelete: NoAction, onUpdate: NoAction, map: "fk_flujos_estados_estado")
+  flujos      flujos  @relation(fields: [id_flujo], references: [id_flujo], onDelete: Cascade, onUpdate: NoAction, map: "fk_flujos_estados_flujo")
+
+  @@id([id_flujo, posicion], map: "pk_flujo_posicion")
+}
+
+model historial_estados_orden {
+  id_historial           Int                  @id @default(autoincrement())
+  id_orden               Int
+  id_estado              Int
+  id_usuario_responsable Int
+  fecha_hora_cambio      DateTime             @default(now()) @db.Timestamp(6)
+  comentarios_estado     comentarios_estado[]
+  estados                estados              @relation(fields: [id_estado], references: [id_estado], onDelete: NoAction, onUpdate: NoAction, map: "fk_historial_estado")
+  ordenes                ordenes              @relation(fields: [id_orden], references: [id_orden], onDelete: Cascade, onUpdate: NoAction, map: "fk_historial_orden")
+  usuarios               usuarios             @relation(fields: [id_usuario_responsable], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_historial_usuario")
+}
+
+model ordenes {
+  id_orden                Int                       @id @default(autoincrement())
+  id_cliente              Int
+  id_producto             Int
+  id_flujo                Int
+  id_estado_actual        Int
+  descripcion_servicio    String?
+  condiciones_pago        String?
+  fecha_creacion          DateTime                  @default(now()) @db.Timestamp(6)
+  fecha_estimada_entrega  DateTime?                 @db.Timestamp(6)
+  fecha_cierre            DateTime?                 @db.Timestamp(6)
+  notas_orden             String?
+  evidencias              evidencias[]
+  historial_estados_orden historial_estados_orden[]
+  clientes                clientes                  @relation(fields: [id_cliente], references: [id_cliente], onUpdate: NoAction, map: "fk_ordenes_cliente")
+  estados                 estados                   @relation(fields: [id_estado_actual], references: [id_estado], onDelete: NoAction, onUpdate: NoAction, map: "fk_ordenes_estado")
+  flujos                  flujos                    @relation(fields: [id_flujo], references: [id_flujo], onDelete: NoAction, onUpdate: NoAction, map: "fk_ordenes_flujo")
+  productos               productos                 @relation(fields: [id_producto], references: [id_producto], onUpdate: NoAction, map: "fk_ordenes_producto")
+}
+
+model productos {
+  id_producto                   Int       @id @default(autoincrement())
+  id_cliente                    Int
+  nombre_producto               String    @db.VarChar(255)
+  identificador_interno         String?   @db.VarChar(100)
+  descripcion                   String?
+  modelo                        String?   @db.VarChar(100)
+  numero_serie                  String?   @db.VarChar(100)
+  identificador_unico_adicional String?   @db.VarChar(100)
+  notas_producto                String?
+  ordenes                       ordenes[]
+  clientes                      clientes  @relation(fields: [id_cliente], references: [id_cliente], onDelete: Cascade, onUpdate: NoAction, map: "fk_productos_cliente")
+}
+
+model roles {
+  id_rol          Int              @id @default(autoincrement())
+  nombre_rol      String           @unique @db.VarChar(100)
+  descripcion_rol String?
+  usuarios_roles  usuarios_roles[]
+}
+
+model usuarios {
+  id_usuario              Int                       @id @default(autoincrement())
+  nombre                  String                    @db.VarChar(255)
+  email                   String                    @unique @db.VarChar(255)
+  telefono                String?                   @db.VarChar(50)
+  usuario_login           String?                   @db.VarChar(100)
+  hash_password           String?                   @db.VarChar(255)
+  comentarios_estado      comentarios_estado[]
+  evidencias              evidencias[]
+  historial_estados_orden historial_estados_orden[]
+  usuarios_roles          usuarios_roles[]
+}
+
+model usuarios_roles {
+  id_usuario Int
+  id_rol     Int
+  roles      roles    @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuarios_roles_rol")
+  usuarios   usuarios @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuarios_roles_usuario")
+
+  @@id([id_usuario, id_rol], map: "pk_usuarios_roles")
 }
