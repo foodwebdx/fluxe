@@ -81,21 +81,49 @@ datasource: {
 
 ## 📊 Current Models
 
-### Cliente (clientes table)
+**Total:** 12 modelos sincronizados desde Neon
+**Última actualización:** 2025-12-24
+
+### Core Models
+
+1. **clientes** - Gestión de clientes
+2. **productos** - Productos de clientes
+3. **ordenes** - Órdenes de servicio
+4. **flujos** - Flujos de trabajo
+5. **estados** - Estados del flujo
+6. **flujos_estados** - Configuración de flujos
+7. **historial_estados_orden** - Trazabilidad de cambios
+8. **comentarios_estado** - Comentarios en cambios
+9. **evidencias** - Archivos y documentos
+10. **usuarios** - Usuarios del sistema
+11. **roles** - Roles de usuario
+12. **usuarios_roles** - Asignación de roles
+
+Para ver el detalle completo de cada modelo, consulta [`MODELS_SUMMARY.md`](./MODELS_SUMMARY.md).
+
+### Ejemplo de Modelo con Relaciones
 
 ```prisma
-model clientes {
-  id_cliente            Int     @id @default(autoincrement())
-  tipo_identificacion   String  @db.VarChar(20)
-  numero_identificacion String  @db.VarChar(50)
-  nombre_completo       String  @db.VarChar(255)
-  telefono_contacto     String  @db.VarChar(50)
-  correo_electronico    String  @unique @db.VarChar(255)
-  tipo_direccion        String? @db.VarChar(50)
-  direccion             String?
-  notas_cliente         String?
-
-  @@unique([tipo_identificacion, numero_identificacion])
+model ordenes {
+  id_orden                Int                       @id @default(autoincrement())
+  id_cliente              Int
+  id_producto             Int
+  id_flujo                Int
+  id_estado_actual        Int
+  descripcion_servicio    String?
+  condiciones_pago        String?
+  fecha_creacion          DateTime                  @default(now())
+  fecha_estimada_entrega  DateTime?
+  fecha_cierre            DateTime?
+  notas_orden             String?
+  
+  // Relaciones
+  evidencias              evidencias[]
+  historial_estados_orden historial_estados_orden[]
+  clientes                clientes                  @relation(...)
+  estados                 estados                   @relation(...)
+  flujos                  flujos                    @relation(...)
+  productos               productos                 @relation(...)
 }
 ```
 
