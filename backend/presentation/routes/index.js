@@ -4,6 +4,7 @@ const clienteRoutes = require('./cliente.routes');
 const estadoRoutes = require('./estado.routes');
 const flujoRoutes = require('./flujo.routes');
 const productoRoutes = require('./producto.routes');
+const ordenRoutes = require('./orden.routes');
 
 const router = express.Router();
 
@@ -55,6 +56,20 @@ router.get('/', (req, res) => {
           'DELETE /api/productos/:id - Eliminar'
         ]
       },
+      ordenes: {
+        path: '/api/ordenes',
+        methods: ['GET', 'POST', 'PUT'],
+        description: 'Gestión completa de órdenes de servicio (RF-01)',
+        endpoints: [
+          'GET /api/ordenes - Listar todas (filtros: ?id_cliente, ?id_estado, ?id_flujo)',
+          'GET /api/ordenes/:id - Obtener por ID con historial',
+          'GET /api/ordenes/cliente/:idCliente - Órdenes de un cliente',
+          'GET /api/ordenes/estado/:idEstado - Órdenes por estado',
+          'POST /api/ordenes - Crear orden',
+          'PUT /api/ordenes/:id - Actualizar orden',
+          'PUT /api/ordenes/:id/estado - Cambiar estado'
+        ]
+      },
     },
     timestamp: new Date().toISOString(),
   });
@@ -65,6 +80,7 @@ router.use('/clientes', clienteRoutes);
 router.use('/estados', estadoRoutes);
 router.use('/flujos', flujoRoutes);
 router.use('/productos', productoRoutes);
+router.use('/ordenes', ordenRoutes);
 
 module.exports = router;
 
