@@ -1,4 +1,4 @@
-const IUseCase = require('../../domain/usecases/IUseCase');
+const IUseCase = require('../../../domain/usecases/IUseCase');
 const OrdenRepository = require('../../../infrastructure/repositories/OrdenRepository');
 
 class GetOrdenesUseCase extends IUseCase {

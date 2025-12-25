@@ -1,4 +1,4 @@
-const IUseCase = require('../../domain/usecases/IUseCase');
+const IUseCase = require('../../../domain/usecases/IUseCase');
 const OrdenRepository = require('../../../infrastructure/repositories/OrdenRepository');
 const FlujoRepository = require('../../../infrastructure/repositories/FlujoRepository');
 const HistorialEstadoRepository = require('../../../infrastructure/repositories/HistorialEstadoRepository');
