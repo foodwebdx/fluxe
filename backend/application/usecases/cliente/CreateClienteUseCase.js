@@ -1,4 +1,4 @@
-const IUseCase = require('../../domain/usecases/IUseCase');
+const IUseCase = require('../../../domain/usecases/IUseCase');
 const ClienteRepository = require('../../../infrastructure/repositories/ClienteRepository');
 
 class CreateClienteUseCase extends IUseCase {

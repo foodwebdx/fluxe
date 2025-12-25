@@ -1,4 +1,4 @@
-const IUseCase = require('../../domain/usecases/IUseCase');
+const IUseCase = require('../../../domain/usecases/IUseCase');
 const ProductoRepository = require('../../../infrastructure/repositories/ProductoRepository');
 
 class GetProductosUseCase extends IUseCase {
