@@ -27,6 +27,13 @@ class HistorialEstadoRepository {
                             nombre_estado: true,
                             descripcion_estado: true
                         }
+                    },
+                    usuarios: {
+                        select: {
+                            id_usuario: true,
+                            nombre: true,
+                            email: true
+                        }
                     }
                 }
             });
@@ -34,6 +41,48 @@ class HistorialEstadoRepository {
             return nuevoHistorial;
         } catch (error) {
             console.error('Error en create historial:', error);
+            throw error;
+        }
+    }
+
+    async findById(id) {
+        try {
+            const historial = await this.getPrisma().historial_estados_orden.findUnique({
+                where: { id_historial: parseInt(id) },
+                include: {
+                    estados: {
+                        select: {
+                            id_estado: true,
+                            nombre_estado: true,
+                            descripcion_estado: true
+                        }
+                    },
+                    ordenes: {
+                        select: {
+                            id_orden: true,
+                            descripcion_servicio: true
+                        }
+                    },
+                    usuarios: {
+                        select: {
+                            id_usuario: true,
+                            nombre: true,
+                            email: true
+                        }
+                    },
+                    comentarios_estado: {
+                        select: {
+                            id_comentario: true,
+                            texto_comentario: true,
+                            fecha_hora_comentario: true
+                        }
+                    }
+                }
+            });
+
+            return historial;
+        } catch (error) {
+            console.error('Error en findById historial:', error);
             throw error;
         }
     }
@@ -49,6 +98,20 @@ class HistorialEstadoRepository {
                             nombre_estado: true,
                             descripcion_estado: true
                         }
+                    },
+                    usuarios: {
+                        select: {
+                            id_usuario: true,
+                            nombre: true,
+                            email: true
+                        }
+                    },
+                    comentarios_estado: {
+                        select: {
+                            id_comentario: true,
+                            texto_comentario: true,
+                            fecha_hora_comentario: true
+                        }
                     }
                 },
                 orderBy: { fecha_hora_cambio: 'asc' }
@@ -57,6 +120,36 @@ class HistorialEstadoRepository {
             return historial;
         } catch (error) {
             console.error('Error en findByOrden:', error);
+            throw error;
+        }
+    }
+
+    async findLastByOrden(idOrden) {
+        try {
+            const historial = await this.getPrisma().historial_estados_orden.findFirst({
+                where: { id_orden: parseInt(idOrden) },
+                include: {
+                    estados: {
+                        select: {
+                            id_estado: true,
+                            nombre_estado: true,
+                            descripcion_estado: true
+                        }
+                    },
+                    usuarios: {
+                        select: {
+                            id_usuario: true,
+                            nombre: true,
+                            email: true
+                        }
+                    }
+                },
+                orderBy: { fecha_hora_cambio: 'desc' }
+            });
+
+            return historial;
+        } catch (error) {
+            console.error('Error en findLastByOrden:', error);
             throw error;
         }
     }
@@ -77,6 +170,13 @@ class HistorialEstadoRepository {
                             id_orden: true,
                             descripcion_servicio: true
                         }
+                    },
+                    usuarios: {
+                        select: {
+                            id_usuario: true,
+                            nombre: true,
+                            email: true
+                        }
                     }
                 },
                 orderBy: { fecha_hora_cambio: 'desc' }
@@ -85,6 +185,53 @@ class HistorialEstadoRepository {
             return historial;
         } catch (error) {
             console.error('Error en findAll historial:', error);
+            throw error;
+        }
+    }
+
+    async update(id, historialData) {
+        try {
+            const historialActualizado = await this.getPrisma().historial_estados_orden.update({
+                where: { id_historial: parseInt(id) },
+                data: {
+                    id_usuario_responsable: historialData.id_usuario_responsable
+                        ? parseInt(historialData.id_usuario_responsable)
+                        : undefined
+                },
+                include: {
+                    estados: {
+                        select: {
+                            id_estado: true,
+                            nombre_estado: true,
+                            descripcion_estado: true
+                        }
+                    },
+                    usuarios: {
+                        select: {
+                            id_usuario: true,
+                            nombre: true,
+                            email: true
+                        }
+                    }
+                }
+            });
+
+            return historialActualizado;
+        } catch (error) {
+            console.error('Error en update historial:', error);
+            throw error;
+        }
+    }
+
+    async delete(id) {
+        try {
+            const historialEliminado = await this.getPrisma().historial_estados_orden.delete({
+                where: { id_historial: parseInt(id) }
+            });
+
+            return historialEliminado;
+        } catch (error) {
+            console.error('Error en delete historial:', error);
             throw error;
         }
     }

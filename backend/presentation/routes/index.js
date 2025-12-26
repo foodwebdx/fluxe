@@ -5,6 +5,9 @@ const estadoRoutes = require('./estado.routes');
 const flujoRoutes = require('./flujo.routes');
 const productoRoutes = require('./producto.routes');
 const ordenRoutes = require('./orden.routes');
+const historialRoutes = require('./historial.routes');
+const comentarioRoutes = require('./comentario.routes');
+const evidenciaRoutes = require('./evidencia.routes');
 
 const router = express.Router();
 
@@ -70,6 +73,40 @@ router.get('/', (req, res) => {
           'PUT /api/ordenes/:id/estado - Cambiar estado'
         ]
       },
+      historial: {
+        path: '/api/historial',
+        methods: ['GET'],
+        description: 'Consulta del historial de cambios de estado de órdenes',
+        endpoints: [
+          'GET /api/historial - Listar todo el historial',
+          'GET /api/historial/:id - Obtener un historial por ID',
+          'GET /api/historial/orden/:idOrden - Historial de una orden específica'
+        ]
+      },
+      comentarios: {
+        path: '/api/comentarios',
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        description: 'Gestión de comentarios asociados a cambios de estado',
+        endpoints: [
+          'GET /api/comentarios - Listar todos los comentarios',
+          'GET /api/comentarios/historial/:idHistorial - Comentarios de un historial',
+          'POST /api/comentarios - Crear comentario',
+          'PUT /api/comentarios/:id - Actualizar comentario',
+          'DELETE /api/comentarios/:id - Eliminar comentario'
+        ]
+      },
+      evidencias: {
+        path: '/api/evidencias',
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        description: 'Gestión de evidencias/archivos asociados a órdenes',
+        endpoints: [
+          'GET /api/evidencias - Listar todas las evidencias',
+          'GET /api/evidencias/orden/:idOrden - Evidencias de una orden',
+          'POST /api/evidencias - Crear evidencia',
+          'PUT /api/evidencias/:id - Actualizar evidencia',
+          'DELETE /api/evidencias/:id - Eliminar evidencia'
+        ]
+      },
     },
     timestamp: new Date().toISOString(),
   });
@@ -81,6 +118,9 @@ router.use('/estados', estadoRoutes);
 router.use('/flujos', flujoRoutes);
 router.use('/productos', productoRoutes);
 router.use('/ordenes', ordenRoutes);
+router.use('/historial', historialRoutes);
+router.use('/comentarios', comentarioRoutes);
+router.use('/evidencias', evidenciaRoutes);
 
 module.exports = router;
 
