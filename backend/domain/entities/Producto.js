@@ -12,6 +12,7 @@ class Producto extends BaseEntity {
         this.numero_serie = data.numero_serie || null;
         this.identificador_unico_adicional = data.identificador_unico_adicional || null;
         this.notas_producto = data.notas_producto || null;
+        this.clientes = data.clientes || null;
     }
 
     validate() {
@@ -43,6 +44,7 @@ class Producto extends BaseEntity {
             numero_serie: this.numero_serie,
             identificador_unico_adicional: this.identificador_unico_adicional,
             notas_producto: this.notas_producto,
+            clientes: this.clientes,
         };
     }
 }

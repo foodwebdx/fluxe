@@ -295,10 +295,12 @@ const Clientes = () => {
                     disabled={modalMode === 'view'}
                   >
                     <option value="">Seleccione</option>
-                    <option value="DNI">DNI</option>
-                    <option value="RUC">RUC</option>
-                    <option value="Pasaporte">Pasaporte</option>
-                    <option value="Carnet Ext.">Carnet Ext.</option>
+                    <option value="CC">CC - Cédula de Ciudadanía</option>
+                    <option value="CE">CE - Cédula de Extranjería</option>
+                    <option value="NIT">NIT - Número de Identificación Tributaria</option>
+                    <option value="TI">TI - Tarjeta de Identidad</option>
+                    <option value="PP">PP - Pasaporte</option>
+                    <option value="PEP">PEP - Permiso Especial de Permanencia</option>
                   </select>
                 </div>
 
