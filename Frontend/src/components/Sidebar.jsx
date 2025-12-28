@@ -14,6 +14,34 @@ const Sidebar = ({ activeView, setActiveView }) => {
           <span className="icon">📊</span>
           <span>Dashboard</span>
         </button>
+        <button
+          className={`nav-item ${activeView === 'ordenes' ? 'active' : ''}`}
+          onClick={() => setActiveView('ordenes')}
+        >
+          <span className="icon">📦</span>
+          <span>Órdenes</span>
+        </button>
+        <button
+          className={`nav-item ${activeView === 'clientes' ? 'active' : ''}`}
+          onClick={() => setActiveView('clientes')}
+        >
+          <span className="icon">👥</span>
+          <span>Clientes</span>
+        </button>
+        <button
+          className={`nav-item ${activeView === 'productos' ? 'active' : ''}`}
+          onClick={() => setActiveView('productos')}
+        >
+          <span className="icon">📦</span>
+          <span>Productos</span>
+        </button>
+        <button
+          className={`nav-item ${activeView === 'flujos' ? 'active' : ''}`}
+          onClick={() => setActiveView('flujos')}
+        >
+          <span className="icon">🌊</span>
+          <span>Flujos</span>
+        </button>
       </nav>
     </aside>
   );
