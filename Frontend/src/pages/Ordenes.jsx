@@ -25,6 +25,15 @@ const Ordenes = () => {
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState(null);
   
+  // Estados para evidencia (cambio de estado)
+  const [evidenciaComentario, setEvidenciaComentario] = useState('');
+  const [evidenciaArchivo, setEvidenciaArchivo] = useState(null);
+  const [evidenciaPreview, setEvidenciaPreview] = useState(null);
+  
+  // Estados para ver evidencias de la orden
+  const [evidencias, setEvidencias] = useState([]);
+  const [loadingEvidencias, setLoadingEvidencias] = useState(false);
+  
   // Estados para filtros
   const [filtros, setFiltros] = useState({
     estado: '',
@@ -68,7 +77,7 @@ const Ordenes = () => {
     setFormError(null);
   };
 
-  const handleViewOrden = (orden) => {
+  const handleViewOrden = async (orden) => {
     setModalMode('view');
     setSelectedOrden(orden);
     setFormData({
@@ -84,6 +93,9 @@ const Ordenes = () => {
     setShowModal(true);
     fetchFormData();
     setFormError(null);
+    
+    // Cargar evidencias de la orden
+    await fetchEvidencias(orden.id_orden);
   };
 
   const handleEditOrden = (orden) => {
@@ -119,6 +131,29 @@ const Ordenes = () => {
       notas_orden: ''
     });
     setFormError(null);
+    setEvidenciaComentario('');
+    setEvidenciaArchivo(null);
+    setEvidenciaPreview(null);
+    setEvidencias([]);
+  };
+
+  const fetchEvidencias = async (idOrden) => {
+    try {
+      setLoadingEvidencias(true);
+      const response = await fetch(`http://localhost:3000/api/evidencias/orden/${idOrden}`);
+      
+      if (!response.ok) {
+        throw new Error('Error al cargar evidencias');
+      }
+      
+      const data = await response.json();
+      setEvidencias(data.data || []);
+    } catch (err) {
+      console.error('Error al cargar evidencias:', err);
+      setEvidencias([]);
+    } finally {
+      setLoadingEvidencias(false);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -143,6 +178,29 @@ const Ordenes = () => {
       cliente: '',
       fecha: ''
     });
+  };
+
+  const handleArchivoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEvidenciaArchivo(file);
+      
+      // Crear preview si es imagen
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setEvidenciaPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setEvidenciaPreview(null);
+      }
+    }
+  };
+
+  const removeArchivo = () => {
+    setEvidenciaArchivo(null);
+    setEvidenciaPreview(null);
   };
 
   // Filtrar órdenes según los filtros aplicados
@@ -177,7 +235,7 @@ const Ordenes = () => {
       let response;
       
       if (modalMode === 'edit') {
-        // Solo actualizar el estado
+        // Actualizar el estado
         response = await fetch(`http://localhost:3000/api/ordenes/${selectedOrden.id_orden}/estado`, {
           method: 'PUT',
           headers: {
@@ -187,6 +245,41 @@ const Ordenes = () => {
             id_estado: parseInt(formData.id_estado_actual)
           })
         });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Error al actualizar el estado');
+        }
+
+        // Si hay comentario o archivo, crear evidencia
+        if (evidenciaComentario || evidenciaArchivo) {
+          // Por ahora, crear evidencia con s3_key temporal
+          // TODO: Implementar subida real a S3
+          const evidenciaData = {
+            id_orden: selectedOrden.id_orden,
+            id_estado: parseInt(formData.id_estado_actual),
+            id_usuario: 1, // TODO: Obtener del usuario logueado
+            tipo_evidencia: evidenciaArchivo ? (evidenciaArchivo.type.startsWith('image/') ? 'image' : 'document') : 'other',
+            s3_key: evidenciaArchivo ? `evidencias/${selectedOrden.id_orden}/${Date.now()}_${evidenciaArchivo.name}` : 'sin-archivo',
+            nombre_archivo_original: evidenciaArchivo ? evidenciaArchivo.name : null,
+            comentario: evidenciaComentario || null
+          };
+
+          const evidenciaResponse = await fetch('http://localhost:3000/api/evidencias', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(evidenciaData)
+          });
+
+          if (!evidenciaResponse.ok) {
+            const evidenciaError = await evidenciaResponse.json();
+            console.warn('Error al guardar evidencia:', evidenciaError.message);
+            // No lanzar error, solo advertir
+          }
+        }
       } else {
         // Crear nueva orden
         response = await fetch('http://localhost:3000/api/ordenes', {
@@ -205,12 +298,12 @@ const Ordenes = () => {
             notas_orden: formData.notas_orden || null
           })
         });
-      }
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || `Error al ${modalMode === 'edit' ? 'actualizar' : 'crear'} la orden`);
+        if (!response.ok) {
+          throw new Error(data.message || 'Error al crear la orden');
+        }
       }
 
       // Recargar órdenes y cerrar modal
@@ -610,30 +703,325 @@ const Ordenes = () => {
                       placeholder="Notas u observaciones adicionales..."
                     />
                   </div>
+
+                  {/* Sección de evidencias - Solo en modo view */}
+                  {modalMode === 'view' && (
+                    <div style={{
+                      marginTop: '2rem',
+                      padding: '1.5rem',
+                      background: '#f9fafb',
+                      borderRadius: '8px',
+                      border: '1px solid #e5e7eb'
+                    }}>
+                      <h3 style={{
+                        margin: '0 0 1rem 0',
+                        fontSize: '1.125rem',
+                        fontWeight: '600',
+                        color: '#374151'
+                      }}>
+                        📋 Historial de Evidencias
+                      </h3>
+                      
+                      {loadingEvidencias ? (
+                        <p style={{color: '#6b7280', fontStyle: 'italic'}}>Cargando evidencias...</p>
+                      ) : evidencias.length === 0 ? (
+                        <p style={{color: '#6b7280', fontStyle: 'italic'}}>No hay evidencias registradas para esta orden</p>
+                      ) : (
+                        <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+                          {evidencias.map((evidencia) => (
+                            <div 
+                              key={evidencia.id_evidencia}
+                              style={{
+                                background: 'white',
+                                padding: '1rem',
+                                borderRadius: '6px',
+                                border: '1px solid #e5e7eb'
+                              }}
+                            >
+                              <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                                marginBottom: '0.75rem'
+                              }}>
+                                <div>
+                                  <span className={`badge ${getEstadoBadge(evidencia.estados?.nombre_estado)}`}>
+                                    {evidencia.estados?.nombre_estado || 'Estado desconocido'}
+                                  </span>
+                                </div>
+                                <span style={{
+                                  fontSize: '0.875rem',
+                                  color: '#6b7280'
+                                }}>
+                                  {formatDate(evidencia.fecha_subida)}
+                                </span>
+                              </div>
+
+                              {evidencia.comentario && (
+                                <div style={{
+                                  padding: '0.75rem',
+                                  background: '#f3f4f6',
+                                  borderRadius: '4px',
+                                  marginBottom: '0.75rem'
+                                }}>
+                                  <p style={{
+                                    margin: 0,
+                                    fontSize: '0.9rem',
+                                    color: '#374151',
+                                    lineHeight: '1.5'
+                                  }}>
+                                    💬 {evidencia.comentario}
+                                  </p>
+                                </div>
+                              )}
+
+                              {evidencia.s3_key && evidencia.s3_key !== 'sin-archivo' && (
+                                <div style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.75rem',
+                                  padding: '0.75rem',
+                                  background: '#f0f9ff',
+                                  borderRadius: '4px',
+                                  border: '1px solid #bfdbfe'
+                                }}>
+                                  {evidencia.tipo_evidencia === 'image' ? (
+                                    <>
+                                      <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        background: '#dbeafe',
+                                        borderRadius: '4px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '1.5rem'
+                                      }}>
+                                        🖼️
+                                      </div>
+                                      <div style={{flex: 1}}>
+                                        <p style={{
+                                          margin: 0,
+                                          fontWeight: '500',
+                                          fontSize: '0.9rem',
+                                          color: '#1e40af'
+                                        }}>
+                                          {evidencia.nombre_archivo_original || 'Imagen'}
+                                        </p>
+                                        <p style={{
+                                          margin: '0.25rem 0 0 0',
+                                          fontSize: '0.8rem',
+                                          color: '#64748b'
+                                        }}>
+                                          Tipo: Imagen
+                                        </p>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        background: '#dbeafe',
+                                        borderRadius: '4px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '1.5rem'
+                                      }}>
+                                        📄
+                                      </div>
+                                      <div style={{flex: 1}}>
+                                        <p style={{
+                                          margin: 0,
+                                          fontWeight: '500',
+                                          fontSize: '0.9rem',
+                                          color: '#1e40af'
+                                        }}>
+                                          {evidencia.nombre_archivo_original || 'Documento'}
+                                        </p>
+                                        <p style={{
+                                          margin: '0.25rem 0 0 0',
+                                          fontSize: '0.8rem',
+                                          color: '#64748b'
+                                        }}>
+                                          Tipo: {evidencia.tipo_evidencia}
+                                        </p>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+
+                              {evidencia.usuarios && (
+                                <div style={{
+                                  marginTop: '0.75rem',
+                                  paddingTop: '0.75rem',
+                                  borderTop: '1px solid #e5e7eb'
+                                }}>
+                                  <p style={{
+                                    margin: 0,
+                                    fontSize: '0.8rem',
+                                    color: '#6b7280'
+                                  }}>
+                                    👤 Subido por: <strong>{evidencia.usuarios.nombre}</strong>
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </>
               )}
 
               {modalMode === 'edit' && (
-                <div className="form-group">
-                  <label htmlFor="id_estado_actual">Cambiar Estado *</label>
-                  <select
-                    id="id_estado_actual"
-                    name="id_estado_actual"
-                    value={formData.id_estado_actual}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Seleccione un estado</option>
-                    {estados.map(estado => (
-                      <option key={estado.id_estado} value={estado.id_estado}>
-                        {estado.nombre_estado}
-                      </option>
-                    ))}
-                  </select>
-                  <p style={{fontSize: '0.875rem', color: '#64748b', marginTop: '0.5rem'}}>
-                    Estado actual: <strong>{selectedOrden?.estado_actual?.nombre_estado}</strong>
-                  </p>
-                </div>
+                <>
+                  <div className="form-group">
+                    <label htmlFor="id_estado_actual">Cambiar Estado *</label>
+                    <select
+                      id="id_estado_actual"
+                      name="id_estado_actual"
+                      value={formData.id_estado_actual}
+                      onChange={handleInputChange}
+                      required
+                    >
+                      <option value="">Seleccione un estado</option>
+                      {estados.map(estado => (
+                        <option key={estado.id_estado} value={estado.id_estado}>
+                          {estado.nombre_estado}
+                        </option>
+                      ))}
+                    </select>
+                    <p style={{fontSize: '0.875rem', color: '#64748b', marginTop: '0.5rem'}}>
+                      Estado actual: <strong>{selectedOrden?.estado_actual?.nombre_estado}</strong>
+                    </p>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="evidencia_comentario">Comentario del Cambio</label>
+                    <textarea
+                      id="evidencia_comentario"
+                      value={evidenciaComentario}
+                      onChange={(e) => setEvidenciaComentario(e.target.value)}
+                      rows="3"
+                      placeholder="Agrega un comentario sobre este cambio de estado..."
+                      style={{width: '100%'}}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="evidencia_archivo">Imagen/Documento de Evidencia</label>
+                    {!evidenciaArchivo ? (
+                      <div style={{
+                        border: '2px dashed #d1d5db',
+                        borderRadius: '8px',
+                        padding: '2rem',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.currentTarget.style.borderColor = '#6366f1';
+                        e.currentTarget.style.backgroundColor = '#f0f9ff';
+                      }}
+                      onDragLeave={(e) => {
+                        e.currentTarget.style.borderColor = '#d1d5db';
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        e.currentTarget.style.borderColor = '#d1d5db';
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        const file = e.dataTransfer.files[0];
+                        if (file) {
+                          setEvidenciaArchivo(file);
+                          if (file.type.startsWith('image/')) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => setEvidenciaPreview(reader.result);
+                            reader.readAsDataURL(file);
+                          }
+                        }
+                      }}
+                      onClick={() => document.getElementById('evidencia_archivo').click()}
+                      >
+                        <div style={{fontSize: '3rem', marginBottom: '0.5rem'}}>📎</div>
+                        <p style={{margin: 0, color: '#6b7280'}}>
+                          Haz clic o arrastra un archivo aquí
+                        </p>
+                        <p style={{margin: '0.5rem 0 0 0', fontSize: '0.875rem', color: '#9ca3af'}}>
+                          Imágenes, PDFs o documentos
+                        </p>
+                      </div>
+                    ) : (
+                      <div style={{
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        padding: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem'
+                      }}>
+                        {evidenciaPreview ? (
+                          <img 
+                            src={evidenciaPreview} 
+                            alt="Preview" 
+                            style={{
+                              width: '100px',
+                              height: '100px',
+                              objectFit: 'cover',
+                              borderRadius: '6px'
+                            }}
+                          />
+                        ) : (
+                          <div style={{
+                            width: '100px',
+                            height: '100px',
+                            background: '#f3f4f6',
+                            borderRadius: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '2rem'
+                          }}>
+                            📄
+                          </div>
+                        )}
+                        <div style={{flex: 1}}>
+                          <p style={{margin: 0, fontWeight: '500'}}>{evidenciaArchivo.name}</p>
+                          <p style={{margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: '#6b7280'}}>
+                            {(evidenciaArchivo.size / 1024).toFixed(2)} KB
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={removeArchivo}
+                          style={{
+                            padding: '0.5rem 1rem',
+                            background: '#fee2e2',
+                            color: '#ef4444',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontWeight: '500'
+                          }}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      id="evidencia_archivo"
+                      onChange={handleArchivoChange}
+                      accept="image/*,.pdf,.doc,.docx"
+                      style={{display: 'none'}}
+                    />
+                  </div>
+                </>
               )}
 
               <div className="modal-actions">
