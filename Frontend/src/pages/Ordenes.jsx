@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './Dashboard.css';
 
-const Ordenes = () => {
+const Ordenes = ({ onVerOrden }) => {
   const [ordenes, setOrdenes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,22 +24,30 @@ const Ordenes = () => {
   });
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState(null);
-  
+
   // Estados para evidencia (cambio de estado)
   const [evidenciaComentario, setEvidenciaComentario] = useState('');
   const [evidenciaArchivo, setEvidenciaArchivo] = useState(null);
   const [evidenciaPreview, setEvidenciaPreview] = useState(null);
-  
+
   // Estados para ver evidencias de la orden
   const [evidencias, setEvidencias] = useState([]);
   const [loadingEvidencias, setLoadingEvidencias] = useState(false);
-  
+
   // Estados para filtros
   const [filtros, setFiltros] = useState({
     estado: '',
     cliente: '',
     fecha: ''
   });
+
+  // Estados para lógica de correcciones (Estados por flujo y Evidencias independientes)
+  const [modalEstados, setModalEstados] = useState([]); // Estados específicos del flujo de la orden
+  const [siguienteEstado, setSiguienteEstado] = useState(null); // Siguiente estado secuencial
+  const [estadoAnterior, setEstadoAnterior] = useState(null); // Estado anterior secuencial
+  const [evidenceMode, setEvidenceMode] = useState('list'); // 'list', 'create', 'edit'
+  const [selectedEvidencia, setSelectedEvidencia] = useState(null); // Evidencia seleccionada para editar
+  const [isEvidenceSubmitting, setIsEvidenceSubmitting] = useState(false);
 
   useEffect(() => {
     fetchOrdenes();
@@ -79,6 +87,7 @@ const Ordenes = () => {
 
   const handleViewOrden = async (orden) => {
     setModalMode('view');
+    setEvidenceMode('list'); // Reset evidence mode
     setSelectedOrden(orden);
     setFormData({
       id_cliente: orden.id_cliente,
@@ -90,15 +99,19 @@ const Ordenes = () => {
       fecha_estimada_entrega: orden.fecha_estimada_entrega ? orden.fecha_estimada_entrega.split('T')[0] : '',
       notas_orden: orden.notas_orden || ''
     });
-    setShowModal(true);
-    fetchFormData();
-    setFormError(null);
-    
+
     // Cargar evidencias de la orden
-    await fetchEvidencias(orden.id_orden);
+    fetchEvidencias(orden.id_orden);
+
+    // Cargar estados del flujo para mostrar nombres correctos si es necesario
+    fetchEstadosFlujo(orden.id_flujo);
+
+    setShowModal(true);
+    fetchFormData(); // Refrescar datos generales por si acaso
+    setFormError(null);
   };
 
-  const handleEditOrden = (orden) => {
+  const handleEditOrden = async (orden) => {
     setModalMode('edit');
     setSelectedOrden(orden);
     setFormData({
@@ -111,9 +124,73 @@ const Ordenes = () => {
       fecha_estimada_entrega: orden.fecha_estimada_entrega ? orden.fecha_estimada_entrega.split('T')[0] : '',
       notas_orden: orden.notas_orden || ''
     });
+
+    // Cargar estados del flujo y determinar el siguiente
+    await fetchEstadosFlujo(orden.id_flujo, orden.id_estado_actual);
+
     setShowModal(true);
     fetchFormData();
     setFormError(null);
+  };
+
+  const fetchEstadosFlujo = async (idFlujo, idEstadoActual = null) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/flujos/${idFlujo}/estados`);
+      const data = await response.json();
+      const estadosFlujo = data.data || [];
+
+      // Ordenar por posición
+      estadosFlujo.sort((a, b) => a.posicion - b.posicion);
+      setModalEstados(estadosFlujo);
+
+      if (idEstadoActual) {
+        // Lógica de transición secuencial (Siguiente y Anterior)
+        const currentStateIndex = estadosFlujo.findIndex(e => e.id_estado === idEstadoActual);
+
+        let nextState = null;
+        let prevState = null;
+
+        if (currentStateIndex !== -1) {
+          // Calcular siguiente estado
+          if (currentStateIndex < estadosFlujo.length - 1) {
+            nextState = estadosFlujo[currentStateIndex + 1];
+            setSiguienteEstado({
+              id_estado: nextState.id_estado,
+              nombre_estado: nextState.estado?.nombre_estado || nextState.estados?.nombre_estado
+            });
+          } else {
+            setSiguienteEstado(null);
+          }
+
+          // Calcular estado anterior
+          if (currentStateIndex > 0) {
+            prevState = estadosFlujo[currentStateIndex - 1];
+            setEstadoAnterior({
+              id_estado: prevState.id_estado,
+              nombre_estado: prevState.estado?.nombre_estado || prevState.estados?.nombre_estado
+            });
+          } else {
+            setEstadoAnterior(null);
+          }
+
+          // Pre-seleccionar el siguiente estado por defecto, si existe
+          if (nextState) {
+            setFormData(prev => ({
+              ...prev,
+              id_estado_actual: nextState.id_estado
+            }));
+          } else if (prevState) {
+            // Si es el último estado, quizás no seleccionar nada por defecto o dejar el anterior para corregir
+            // Por seguridad, dejemos que el usuario elija si quiere retroceder
+            setFormData(prev => ({ ...prev, id_estado_actual: '' }));
+          }
+
+        }
+      }
+    } catch (err) {
+      console.error('Error al cargar estados del flujo:', err);
+      setModalEstados([]);
+    }
   };
 
   const handleCloseModal = () => {
@@ -141,11 +218,11 @@ const Ordenes = () => {
     try {
       setLoadingEvidencias(true);
       const response = await fetch(`http://localhost:3000/api/evidencias/orden/${idOrden}`);
-      
+
       if (!response.ok) {
         throw new Error('Error al cargar evidencias');
       }
-      
+
       const data = await response.json();
       setEvidencias(data.data || []);
     } catch (err) {
@@ -184,7 +261,7 @@ const Ordenes = () => {
     const file = e.target.files[0];
     if (file) {
       setEvidenciaArchivo(file);
-      
+
       // Crear preview si es imagen
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
@@ -202,6 +279,85 @@ const Ordenes = () => {
     setEvidenciaArchivo(null);
     setEvidenciaPreview(null);
   };
+
+  // --- Manejo de Evidencias CRUD ---
+
+  const handleSaveEvidenciaIndependent = async (e) => {
+    e.preventDefault();
+    setIsEvidenceSubmitting(true);
+
+    try {
+      const isEdit = evidenceMode === 'edit';
+      const url = isEdit
+        ? `http://localhost:3000/api/evidencias/${selectedEvidencia.id_evidencia}`
+        : 'http://localhost:3000/api/evidencias';
+
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const evidenciaData = {
+        id_orden: selectedOrden.id_orden,
+        id_estado: selectedOrden.id_estado_actual, // Mantiene el estado actual
+        id_usuario: 1, // TODO: Obtener del usuario logueado
+        tipo_evidencia: evidenciaArchivo ? (evidenciaArchivo.type.startsWith('image/') ? 'image' : 'document') : (isEdit ? selectedEvidencia.tipo_evidencia : 'other'),
+        s3_key: evidenciaArchivo ? `evidencias/${selectedOrden.id_orden}/${Date.now()}_${evidenciaArchivo.name}` : (isEdit ? selectedEvidencia.s3_key : 'sin-archivo'),
+        nombre_archivo_original: evidenciaArchivo ? evidenciaArchivo.name : (isEdit ? selectedEvidencia.nombre_archivo_original : null),
+        comentario: evidenciaComentario || null
+      };
+
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(evidenciaData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al ${isEdit ? 'actualizar' : 'crear'} la evidencia`);
+      }
+
+      // Reiniciar form y recargar lista
+      setEvidenciaComentario('');
+      setEvidenciaArchivo(null);
+      setEvidenciaPreview(null);
+      setEvidenceMode('list');
+      setSelectedEvidencia(null);
+      await fetchEvidencias(selectedOrden.id_orden);
+
+    } catch (err) {
+      console.error('Error saving evidence:', err);
+      alert(err.message);
+    } finally {
+      setIsEvidenceSubmitting(false);
+    }
+  };
+
+  const handleEditEvidenciaClick = (evidencia) => {
+    setEvidenceMode('edit');
+    setSelectedEvidencia(evidencia);
+    setEvidenciaComentario(evidencia.comentario || '');
+    // No podemos "cargar" el archivo en el input file, pero mantenemos la referencia si no lo cambian
+  };
+
+  const handleDeleteEvidencia = async (idEvidencia) => {
+    if (!confirm('¿Estás seguro de eliminar esta evidencia?')) return;
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/evidencias/${idEvidencia}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar la evidencia');
+      }
+
+      await fetchEvidencias(selectedOrden.id_orden);
+    } catch (err) {
+      console.error('Error deleting evidence:', err);
+      alert(err.message);
+    }
+  };
+
 
   // Filtrar órdenes según los filtros aplicados
   const ordenesFiltradas = ordenes.filter(orden => {
@@ -233,7 +389,7 @@ const Ordenes = () => {
 
     try {
       let response;
-      
+
       if (modalMode === 'edit') {
         // Actualizar el estado
         response = await fetch(`http://localhost:3000/api/ordenes/${selectedOrden.id_orden}/estado`, {
@@ -321,11 +477,11 @@ const Ordenes = () => {
     try {
       setLoading(true);
       const response = await fetch('http://localhost:3000/api/ordenes');
-      
+
       if (!response.ok) {
         throw new Error('Error al cargar las órdenes');
       }
-      
+
       const data = await response.json();
       setOrdenes(data.data || []);
       setError(null);
@@ -372,7 +528,7 @@ const Ordenes = () => {
       <div className="dashboard">
         <div className="dashboard-header">
           <h1>Órdenes</h1>
-          <p className="subtitle" style={{color: '#ef4444'}}>Error: {error}</p>
+          <p className="subtitle" style={{ color: '#ef4444' }}>Error: {error}</p>
         </div>
       </div>
     );
@@ -464,7 +620,7 @@ const Ordenes = () => {
           <div className="stat-content">
             <p className="stat-label">Completadas</p>
             <h3 className="stat-value">
-              {ordenesFiltradas.filter(o => 
+              {ordenesFiltradas.filter(o =>
                 o.estado_actual?.nombre_estado?.toUpperCase() === 'COMPLETADO'
               ).length}
             </h3>
@@ -476,7 +632,7 @@ const Ordenes = () => {
           <div className="stat-content">
             <p className="stat-label">Pendientes</p>
             <h3 className="stat-value">
-              {ordenesFiltradas.filter(o => 
+              {ordenesFiltradas.filter(o =>
                 o.estado_actual?.nombre_estado?.toUpperCase() === 'PENDIENTE'
               ).length}
             </h3>
@@ -515,9 +671,9 @@ const Ordenes = () => {
               <tbody>
                 {ordenesFiltradas.length === 0 ? (
                   <tr>
-                    <td colSpan="6" style={{textAlign: 'center', padding: '2rem'}}>
-                      {filtros.estado || filtros.cliente || filtros.fecha 
-                        ? 'No hay órdenes que coincidan con los filtros' 
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>
+                      {filtros.estado || filtros.cliente || filtros.fecha
+                        ? 'No hay órdenes que coincidan con los filtros'
                         : 'No hay órdenes registradas'}
                     </td>
                   </tr>
@@ -534,7 +690,7 @@ const Ordenes = () => {
                       </td>
                       <td>{formatDate(orden.fecha_creacion)}</td>
                       <td>
-                        <button className="btn-sm btn-primary" onClick={() => handleViewOrden(orden)}>Ver</button>
+                        <button className="btn-sm btn-primary" onClick={() => onVerOrden && onVerOrden(orden.id_orden)}>Ver</button>
                         <button className="btn-sm btn-secondary" onClick={() => handleEditOrden(orden)}>Editar</button>
                       </td>
                     </tr>
@@ -558,7 +714,7 @@ const Ordenes = () => {
               </h2>
               <button className="modal-close" onClick={handleCloseModal}>&times;</button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="modal-form">
               {formError && (
                 <div className="form-error">
@@ -641,6 +797,7 @@ const Ordenes = () => {
                         disabled={modalMode === 'view'}
                       >
                         <option value="">Seleccione un estado</option>
+                        {/* Mostrar estados basados en el flujo si están disponibles en modalMode=create, sino todos */}
                         {estados.map(estado => (
                           <option key={estado.id_estado} value={estado.id_estado}>
                             {estado.nombre_estado}
@@ -713,23 +870,95 @@ const Ordenes = () => {
                       borderRadius: '8px',
                       border: '1px solid #e5e7eb'
                     }}>
-                      <h3 style={{
-                        margin: '0 0 1rem 0',
-                        fontSize: '1.125rem',
-                        fontWeight: '600',
-                        color: '#374151'
-                      }}>
-                        📋 Historial de Evidencias
-                      </h3>
-                      
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <h3 style={{
+                          margin: 0,
+                          fontSize: '1.125rem',
+                          fontWeight: '600',
+                          color: '#374151'
+                        }}>
+                          📋 Historial de Evidencias
+                        </h3>
+
+                        {evidenceMode === 'list' && (
+                          <button
+                            type="button"
+                            className="btn-sm btn-primary"
+                            onClick={() => {
+                              setEvidenceMode('create');
+                              setEvidenciaComentario('');
+                              setEvidenciaArchivo(null);
+                              setEvidenciaPreview(null);
+                            }}
+                          >
+                            + Agregar Evidencia
+                          </button>
+                        )}
+                      </div>
+
+                      {(evidenceMode === 'create' || evidenceMode === 'edit') && (
+                        <div style={{
+                          marginBottom: '1.5rem',
+                          padding: '1rem',
+                          background: 'white',
+                          borderRadius: '6px',
+                          border: '1px solid #c7d2fe'
+                        }}>
+                          <h4 style={{ marginTop: 0, marginBottom: '0.75rem', color: '#4338ca' }}>
+                            {evidenceMode === 'create' ? 'Nueva Evidencia' : 'Editar Evidencia'}
+                          </h4>
+                          <div className="form-group">
+                            <label style={{ fontSize: '0.9rem' }}>Comentario</label>
+                            <textarea
+                              value={evidenciaComentario}
+                              onChange={(e) => setEvidenciaComentario(e.target.value)}
+                              rows="2"
+                              style={{ width: '100%', marginBottom: '0.5rem' }}
+                              placeholder="Escribe un comentario..."
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label style={{ fontSize: '0.9rem' }}>Archivo (Opcional)</label>
+                            <input
+                              type="file"
+                              onChange={handleArchivoChange}
+                              accept="image/*,.pdf,.doc,.docx"
+                              style={{ display: 'block', fontSize: '0.9rem' }}
+                            />
+                            {evidenciaPreview && (
+                              <img src={evidenciaPreview} alt="Preview" style={{ height: '60px', marginTop: '0.5rem', borderRadius: '4px' }} />
+                            )}
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                            <button
+                              type="button"
+                              className="btn-sm btn-secondary"
+                              onClick={() => setEvidenceMode('list')}
+                            >
+                              Cancelar
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-sm btn-primary"
+                              onClick={handleSaveEvidenciaIndependent}
+                              disabled={isEvidenceSubmitting}
+                            >
+                              {isEvidenceSubmitting ? 'Guardando...' : 'Guardar'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
                       {loadingEvidencias ? (
-                        <p style={{color: '#6b7280', fontStyle: 'italic'}}>Cargando evidencias...</p>
+                        <p style={{ color: '#6b7280', fontStyle: 'italic' }}>Cargando evidencias...</p>
                       ) : evidencias.length === 0 ? (
-                        <p style={{color: '#6b7280', fontStyle: 'italic'}}>No hay evidencias registradas para esta orden</p>
+                        <p style={{ color: '#6b7280', fontStyle: 'italic' }}>No hay evidencias registradas para esta orden</p>
                       ) : (
-                        <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                           {evidencias.map((evidencia) => (
-                            <div 
+                            <div
                               key={evidencia.id_evidencia}
                               style={{
                                 background: 'white',
@@ -749,12 +978,34 @@ const Ordenes = () => {
                                     {evidencia.estados?.nombre_estado || 'Estado desconocido'}
                                   </span>
                                 </div>
-                                <span style={{
-                                  fontSize: '0.875rem',
-                                  color: '#6b7280'
-                                }}>
-                                  {formatDate(evidencia.fecha_subida)}
-                                </span>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
+                                  <span style={{
+                                    fontSize: '0.875rem',
+                                    color: '#6b7280'
+                                  }}>
+                                    {formatDate(evidencia.fecha_subida)}
+                                  </span>
+                                  <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                    <button
+                                      type="button"
+                                      className="btn-sm"
+                                      style={{ padding: '2px 6px', fontSize: '0.8rem' }}
+                                      onClick={() => handleEditEvidenciaClick(evidencia)}
+                                      title="Editar evidencia"
+                                    >
+                                      ✏️
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="btn-sm"
+                                      style={{ padding: '2px 6px', fontSize: '0.8rem', color: '#ef4444' }}
+                                      onClick={() => handleDeleteEvidencia(evidencia.id_evidencia)}
+                                      title="Eliminar evidencia"
+                                    >
+                                      🗑️
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
 
                               {evidencia.comentario && (
@@ -799,7 +1050,7 @@ const Ordenes = () => {
                                       }}>
                                         🖼️
                                       </div>
-                                      <div style={{flex: 1}}>
+                                      <div style={{ flex: 1 }}>
                                         <p style={{
                                           margin: 0,
                                           fontWeight: '500',
@@ -831,7 +1082,7 @@ const Ordenes = () => {
                                       }}>
                                         📄
                                       </div>
-                                      <div style={{flex: 1}}>
+                                      <div style={{ flex: 1 }}>
                                         <p style={{
                                           margin: 0,
                                           fontWeight: '500',
@@ -880,22 +1131,52 @@ const Ordenes = () => {
               {modalMode === 'edit' && (
                 <>
                   <div className="form-group">
-                    <label htmlFor="id_estado_actual">Cambiar Estado *</label>
-                    <select
-                      id="id_estado_actual"
-                      name="id_estado_actual"
-                      value={formData.id_estado_actual}
-                      onChange={handleInputChange}
-                      required
-                    >
-                      <option value="">Seleccione un estado</option>
-                      {estados.map(estado => (
-                        <option key={estado.id_estado} value={estado.id_estado}>
-                          {estado.nombre_estado}
-                        </option>
-                      ))}
-                    </select>
-                    <p style={{fontSize: '0.875rem', color: '#64748b', marginTop: '0.5rem'}}>
+                    <label htmlFor="id_estado_actual">Seleccionar Transición *</label>
+
+                    {(siguienteEstado || estadoAnterior) ? (
+                      <select
+                        id="id_estado_actual"
+                        name="id_estado_actual"
+                        value={formData.id_estado_actual}
+                        onChange={handleInputChange}
+                        required
+                        style={{
+                          padding: '0.75rem',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '6px',
+                          width: '100%',
+                          backgroundColor: '#f9fafb',
+                          fontSize: '1rem'
+                        }}
+                      >
+                        <option value="">Seleccione una acción...</option>
+
+                        {siguienteEstado && (
+                          <option value={siguienteEstado.id_estado}>
+                            ➡️ Avanzar a: {siguienteEstado.nombre_estado}
+                          </option>
+                        )}
+
+                        {estadoAnterior && (
+                          <option value={estadoAnterior.id_estado}>
+                            ⬅️ Retroceder a: {estadoAnterior.nombre_estado}
+                          </option>
+                        )}
+                      </select>
+                    ) : (
+                      <div style={{
+                        padding: '0.75rem',
+                        background: '#f3f4f6',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        color: '#6b7280',
+                        fontStyle: 'italic'
+                      }}>
+                        Esta orden está en el estado inicial o final y no tiene transiciones disponibles en este momento.
+                      </div>
+                    )}
+
+                    <p style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '0.5rem' }}>
                       Estado actual: <strong>{selectedOrden?.estado_actual?.nombre_estado}</strong>
                     </p>
                   </div>
@@ -908,7 +1189,7 @@ const Ordenes = () => {
                       onChange={(e) => setEvidenciaComentario(e.target.value)}
                       rows="3"
                       placeholder="Agrega un comentario sobre este cambio de estado..."
-                      style={{width: '100%'}}
+                      style={{ width: '100%' }}
                     />
                   </div>
 
@@ -923,36 +1204,36 @@ const Ordenes = () => {
                         cursor: 'pointer',
                         transition: 'all 0.2s'
                       }}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.style.borderColor = '#6366f1';
-                        e.currentTarget.style.backgroundColor = '#f0f9ff';
-                      }}
-                      onDragLeave={(e) => {
-                        e.currentTarget.style.borderColor = '#d1d5db';
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.style.borderColor = '#d1d5db';
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        const file = e.dataTransfer.files[0];
-                        if (file) {
-                          setEvidenciaArchivo(file);
-                          if (file.type.startsWith('image/')) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => setEvidenciaPreview(reader.result);
-                            reader.readAsDataURL(file);
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.style.borderColor = '#6366f1';
+                          e.currentTarget.style.backgroundColor = '#f0f9ff';
+                        }}
+                        onDragLeave={(e) => {
+                          e.currentTarget.style.borderColor = '#d1d5db';
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.style.borderColor = '#d1d5db';
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          const file = e.dataTransfer.files[0];
+                          if (file) {
+                            setEvidenciaArchivo(file);
+                            if (file.type.startsWith('image/')) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => setEvidenciaPreview(reader.result);
+                              reader.readAsDataURL(file);
+                            }
                           }
-                        }
-                      }}
-                      onClick={() => document.getElementById('evidencia_archivo').click()}
+                        }}
+                        onClick={() => document.getElementById('evidencia_archivo').click()}
                       >
-                        <div style={{fontSize: '3rem', marginBottom: '0.5rem'}}>📎</div>
-                        <p style={{margin: 0, color: '#6b7280'}}>
+                        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>📎</div>
+                        <p style={{ margin: 0, color: '#6b7280' }}>
                           Haz clic o arrastra un archivo aquí
                         </p>
-                        <p style={{margin: '0.5rem 0 0 0', fontSize: '0.875rem', color: '#9ca3af'}}>
+                        <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.875rem', color: '#9ca3af' }}>
                           Imágenes, PDFs o documentos
                         </p>
                       </div>
@@ -966,9 +1247,9 @@ const Ordenes = () => {
                         gap: '1rem'
                       }}>
                         {evidenciaPreview ? (
-                          <img 
-                            src={evidenciaPreview} 
-                            alt="Preview" 
+                          <img
+                            src={evidenciaPreview}
+                            alt="Preview"
                             style={{
                               width: '100px',
                               height: '100px',
@@ -990,9 +1271,9 @@ const Ordenes = () => {
                             📄
                           </div>
                         )}
-                        <div style={{flex: 1}}>
-                          <p style={{margin: 0, fontWeight: '500'}}>{evidenciaArchivo.name}</p>
-                          <p style={{margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: '#6b7280'}}>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ margin: 0, fontWeight: '500' }}>{evidenciaArchivo.name}</p>
+                          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: '#6b7280' }}>
                             {(evidenciaArchivo.size / 1024).toFixed(2)} KB
                           </p>
                         </div>
@@ -1018,7 +1299,7 @@ const Ordenes = () => {
                       id="evidencia_archivo"
                       onChange={handleArchivoChange}
                       accept="image/*,.pdf,.doc,.docx"
-                      style={{display: 'none'}}
+                      style={{ display: 'none' }}
                     />
                   </div>
                 </>
@@ -1029,9 +1310,13 @@ const Ordenes = () => {
                   {modalMode === 'view' ? 'Cerrar' : 'Cancelar'}
                 </button>
                 {modalMode !== 'view' && (
-                  <button type="submit" className="btn-submit" disabled={formLoading}>
-                    {formLoading 
-                      ? (modalMode === 'edit' ? 'Actualizando...' : 'Creando...') 
+                  <button
+                    type="submit"
+                    className="btn-submit"
+                    disabled={formLoading || (modalMode === 'edit' && !siguienteEstado && !estadoAnterior)}
+                  >
+                    {formLoading
+                      ? (modalMode === 'edit' ? 'Actualizando...' : 'Creando...')
                       : (modalMode === 'edit' ? 'Actualizar Estado' : 'Crear Orden')}
                   </button>
                 )}

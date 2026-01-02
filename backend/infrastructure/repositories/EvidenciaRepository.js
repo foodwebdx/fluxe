@@ -221,6 +221,7 @@ class EvidenciaRepository {
                 where: { id_evidencia: parseInt(id) },
                 data: {
                     tipo_evidencia: evidenciaData.tipo_evidencia || undefined,
+                    s3_key: evidenciaData.s3_key || undefined,
                     nombre_archivo_original: evidenciaData.nombre_archivo_original || undefined,
                     comentario: evidenciaData.comentario !== undefined ? evidenciaData.comentario : undefined
                 },
