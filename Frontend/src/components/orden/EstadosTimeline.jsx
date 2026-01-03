@@ -103,6 +103,44 @@ const EstadosTimeline = ({
         }
     };
 
+    const handleRetrocederEstado = async () => {
+        const estadoPrevio = estadosPrevios[estadosPrevios.length - 1];
+
+        if (!estadoPrevio) return;
+
+        if (!confirm(`¿Está seguro de retroceder al estado "${estadoPrevio.estado?.nombre_estado || estadoPrevio.estados?.nombre_estado}"?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/ordenes/${ordenId}/estado`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id_estado: estadoPrevio.id_estado
+                })
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Error al cambiar estado');
+            }
+
+            // Notificar cambio exitoso
+            alert('Estado retrocedido exitosamente');
+
+            // Recargar datos
+            if (onEstadoChange) {
+                await onEstadoChange();
+            }
+        } catch (err) {
+            console.error('Error al retroceder estado:', err);
+            alert('Error al cambiar estado: ' + err.message);
+        }
+    };
+
     // Filtrar evidencias del estado seleccionado para el modal
     const evidenciasEstado = selectedEstado
         ? evidencias.filter(e => e.id_estado === selectedEstado.id_estado)
@@ -133,6 +171,7 @@ const EstadosTimeline = ({
                         ordenId={ordenId}
                         evidencias={evidencias.filter(e => e.id_estado === estadoActual.id_estado)}
                         onRefresh={onRefresh}
+                        onRetroceder={estadosPrevios.length > 0 ? handleRetrocederEstado : null}
                     />
                 )}
 

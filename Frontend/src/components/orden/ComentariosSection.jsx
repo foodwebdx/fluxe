@@ -8,6 +8,8 @@ const ComentariosSection = ({
 }) => {
     const [nuevoComentario, setNuevoComentario] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [editingId, setEditingId] = useState(null);
+    const [editingText, setEditingText] = useState('');
 
     const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -64,6 +66,85 @@ const ComentariosSection = ({
         }
     };
 
+    const handleEditComentario = (comentario) => {
+        setEditingId(comentario.id_comentario);
+        setEditingText(comentario.texto_comentario);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingId(null);
+        setEditingText('');
+    };
+
+    const handleSaveEdit = async (id) => {
+        if (!editingText.trim()) {
+            alert('El comentario no puede estar vacío');
+            return;
+        }
+
+        setSubmitting(true);
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/comentarios/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    texto_comentario: editingText.trim()
+                })
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Error al actualizar comentario');
+            }
+
+            // Resetear estado de edición
+            setEditingId(null);
+            setEditingText('');
+
+            // Refrescar datos
+            if (onRefresh) {
+                await onRefresh();
+            }
+        } catch (err) {
+            console.error('Error al actualizar comentario:', err);
+            alert('Error al actualizar comentario: ' + err.message);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleDeleteComentario = async (id) => {
+        if (!confirm('¿Estás seguro de eliminar este comentario?')) {
+            return;
+        }
+
+        setSubmitting(true);
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/comentarios/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Error al eliminar comentario');
+            }
+
+            // Refrescar datos
+            if (onRefresh) {
+                await onRefresh();
+            }
+        } catch (err) {
+            console.error('Error al eliminar comentario:', err);
+            alert('Error al eliminar comentario: ' + err.message);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     return (
         <div className="comentarios-section">
             <h4>💬 Comentarios</h4>
@@ -81,9 +162,67 @@ const ComentariosSection = ({
                                     {formatDate(comentario.fecha_hora_comentario)}
                                 </span>
                             </div>
-                            <div className="comentario-texto">
-                                {comentario.texto_comentario}
-                            </div>
+
+                            {editingId === comentario.id_comentario ? (
+                                // Modo edición
+                                <div className="comentario-edit-form">
+                                    <input
+                                        type="text"
+                                        className="comentario-input"
+                                        value={editingText}
+                                        onChange={(e) => setEditingText(e.target.value)}
+                                        disabled={submitting}
+                                        autoFocus
+                                    />
+                                    <div className="comentario-edit-actions">
+                                        <button
+                                            type="button"
+                                            className="btn-sm btn-primary"
+                                            onClick={() => handleSaveEdit(comentario.id_comentario)}
+                                            disabled={submitting || !editingText.trim()}
+                                        >
+                                            {submitting ? 'Guardando...' : '✓ Guardar'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn-sm btn-secondary"
+                                            onClick={handleCancelEdit}
+                                            disabled={submitting}
+                                        >
+                                            ✕ Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                // Modo visualización
+                                <>
+                                    <div className="comentario-texto">
+                                        {comentario.texto_comentario}
+                                    </div>
+                                    {!readOnly && (
+                                        <div className="comentario-actions">
+                                            <button
+                                                type="button"
+                                                className="btn-icon"
+                                                onClick={() => handleEditComentario(comentario)}
+                                                title="Editar comentario"
+                                                disabled={submitting}
+                                            >
+                                                ✏️
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn-icon btn-danger"
+                                                onClick={() => handleDeleteComentario(comentario.id_comentario)}
+                                                title="Eliminar comentario"
+                                                disabled={submitting}
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
                     ))}
                 </div>

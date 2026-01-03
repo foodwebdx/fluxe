@@ -42,6 +42,13 @@ const Sidebar = ({ activeView, setActiveView }) => {
           <span className="icon">🌊</span>
           <span>Flujos</span>
         </button>
+        <button
+          className={`nav-item ${activeView === 'estados' ? 'active' : ''}`}
+          onClick={() => setActiveView('estados')}
+        >
+          <span className="icon">⚙️</span>
+          <span>Estados</span>
+        </button>
       </nav>
     </aside>
   );

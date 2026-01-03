@@ -6,6 +6,7 @@ import OrdenDetail from './pages/OrdenDetail';
 import Clientes from './pages/Clientes';
 import Productos from './pages/Productos';
 import Flujos from './pages/Flujos';
+import Estados from './pages/Estados';
 import './App.css';
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
         {activeView === 'clientes' && <Clientes />}
         {activeView === 'productos' && <Productos />}
         {activeView === 'flujos' && <Flujos />}
+        {activeView === 'estados' && <Estados />}
       </main>
     </div>
   );
