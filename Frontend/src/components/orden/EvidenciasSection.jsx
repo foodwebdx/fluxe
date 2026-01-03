@@ -111,6 +111,37 @@ const EvidenciasSection = ({
         return '📎';
     };
 
+    const handleDeleteEvidencia = async (id) => {
+        if (!confirm('¿Estás seguro de eliminar esta evidencia?')) {
+            return;
+        }
+
+        setUploading(true);
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/evidencias/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Error al eliminar evidencia');
+            }
+
+            // Refrescar datos
+            if (onRefresh) {
+                await onRefresh();
+            }
+
+            alert('Evidencia eliminada exitosamente');
+        } catch (err) {
+            console.error('Error al eliminar evidencia:', err);
+            alert('Error al eliminar evidencia: ' + err.message);
+        } finally {
+            setUploading(false);
+        }
+    };
+
     return (
         <div className="evidencias-section">
             <h4>📎 Evidencias</h4>
@@ -119,7 +150,7 @@ const EvidenciasSection = ({
             {evidencias && evidencias.length > 0 ? (
                 <div className="evidencias-grid">
                     {evidencias.map((evidencia) => (
-                        <div key={evidencia.id_evidencia} className="evidencia-item">
+                        <div key={evidencia.id_evidencia} className="evidencia-item" style={{ position: 'relative' }}>
                             {evidencia.tipo_evidencia === 'image' ? (
                                 <>
                                     <img
@@ -143,6 +174,33 @@ const EvidenciasSection = ({
                             <div className="evidencia-overlay">
                                 {evidencia.nombre_archivo_original}
                             </div>
+                            {!readOnly && (
+                                <button
+                                    type="button"
+                                    className="evidencia-delete-btn"
+                                    onClick={() => handleDeleteEvidencia(evidencia.id_evidencia)}
+                                    title="Eliminar evidencia"
+                                    disabled={uploading}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '0.5rem',
+                                        right: '0.5rem',
+                                        background: '#fee2e2',
+                                        color: '#ef4444',
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        padding: '0.25rem 0.5rem',
+                                        cursor: 'pointer',
+                                        fontSize: '1rem',
+                                        opacity: 0.9,
+                                        transition: 'opacity 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => e.target.style.opacity = 1}
+                                    onMouseLeave={(e) => e.target.style.opacity = 0.9}
+                                >
+                                    🗑️
+                                </button>
+                            )}
                         </div>
                     ))}
                 </div>

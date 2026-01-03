@@ -8,6 +8,7 @@ const TimelineEstado = ({
     evidencias,
     onClick,
     onAvanzar,
+    onRetroceder,
     onRefresh
 }) => {
     const formatDate = (dateString) => {
@@ -43,6 +44,13 @@ const TimelineEstado = ({
                     ? formatDate(estado.historial.fecha_hora_cambio)
                     : '--'}
             </div>
+
+            {/* Botón retroceder para el estado actual si hay estados previos */}
+            {type === 'current' && onRetroceder && (
+                <button className="btn-retroceder" onClick={onRetroceder}>
+                    ⬅️ Retroceder
+                </button>
+            )}
 
             {/* Botón avanzar para el siguiente estado futuro */}
             {type === 'pending' && onAvanzar && (

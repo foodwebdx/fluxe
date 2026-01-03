@@ -691,7 +691,6 @@ const Ordenes = ({ onVerOrden }) => {
                       <td>{formatDate(orden.fecha_creacion)}</td>
                       <td>
                         <button className="btn-sm btn-primary" onClick={() => onVerOrden && onVerOrden(orden.id_orden)}>Ver</button>
-                        <button className="btn-sm btn-secondary" onClick={() => handleEditOrden(orden)}>Editar</button>
                       </td>
                     </tr>
                   ))
