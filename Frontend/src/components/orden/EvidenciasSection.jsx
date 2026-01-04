@@ -140,6 +140,18 @@ const EvidenciasSection = ({
         }
     };
 
+    const handleDownload = (evidencia) => {
+        if (evidencia.url) {
+            window.open(evidencia.url, '_blank');
+        }
+    };
+
+    const handleImageClick = (evidencia) => {
+        if (evidencia.url) {
+            window.open(evidencia.url, '_blank');
+        }
+    };
+
     return (
         <div className="evidencias-section">
             <h4>📎 Evidencias</h4>
@@ -148,37 +160,64 @@ const EvidenciasSection = ({
             {evidencias && evidencias.length > 0 ? (
                 <div className="evidencias-grid">
                     {evidencias.map((evidencia) => (
-                        <div key={evidencia.id_evidencia} className="evidencia-item" style={{ position: 'relative' }}>
+                        <div key={evidencia.id_evidencia} className="evidencia-item" style={{ position: 'relative', cursor: 'pointer' }}>
                             {evidencia.tipo_evidencia === 'image' ? (
                                 <>
                                     <img
                                         src={evidencia.url}
                                         alt={evidencia.nombre_archivo_original}
                                         className="evidencia-preview"
+                                        onClick={() => handleImageClick(evidencia)}
                                         onError={(e) => {
                                             e.target.style.display = 'none';
                                             e.target.nextSibling.style.display = 'flex';
                                         }}
+                                        style={{ cursor: 'pointer' }}
                                     />
                                     <div className="evidencia-icon" style={{ display: 'none' }}>
                                         🖼️
                                     </div>
                                 </>
                             ) : (
-                                <a
-                                    href={evidencia.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <div
                                     className="evidencia-icon"
-                                    style={{ textDecoration: 'none', cursor: 'pointer' }}
+                                    onClick={() => handleDownload(evidencia)}
+                                    style={{ cursor: 'pointer' }}
                                     title={`Descargar ${evidencia.nombre_archivo_original}`}
                                 >
                                     {getFileIcon(evidencia.tipo_evidencia)}
-                                </a>
+                                </div>
                             )}
                             <div className="evidencia-overlay">
                                 {evidencia.nombre_archivo_original}
                             </div>
+
+                            {/* Botón de descarga */}
+                            <button
+                                type="button"
+                                onClick={() => handleDownload(evidencia)}
+                                title="Descargar evidencia"
+                                style={{
+                                    position: 'absolute',
+                                    top: '0.5rem',
+                                    right: !readOnly ? '3rem' : '0.5rem',
+                                    background: '#e0f2fe',
+                                    color: '#0284c7',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    padding: '0.25rem 0.5rem',
+                                    cursor: 'pointer',
+                                    fontSize: '1rem',
+                                    opacity: 0.9,
+                                    transition: 'opacity 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.target.style.opacity = 1}
+                                onMouseLeave={(e) => e.target.style.opacity = 0.9}
+                            >
+                                ⬇️
+                            </button>
+
+                            {/* Botón de eliminar (solo si no es readOnly) */}
                             {!readOnly && (
                                 <button
                                     type="button"

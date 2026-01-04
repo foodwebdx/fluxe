@@ -38,8 +38,21 @@ const EstadoModal = ({ estado, evidencias, onClose }) => {
 
     const getFileIcon = (tipo) => {
         if (tipo === 'image') return '🖼️';
-        if (tipo === 'document') return '📄';
+        if (tipo === 'pdf') return '📄';
+        if (tipo === 'document') return '📝';
         return '📎';
+    };
+
+    const handleDownload = (evidencia) => {
+        if (evidencia.url) {
+            window.open(evidencia.url, '_blank');
+        }
+    };
+
+    const handleImageClick = (evidencia) => {
+        if (evidencia.url) {
+            window.open(evidencia.url, '_blank');
+        }
     };
 
     return (
@@ -94,30 +107,60 @@ const EstadoModal = ({ estado, evidencias, onClose }) => {
                     {evidencias && evidencias.length > 0 ? (
                         <div className="evidencias-grid">
                             {evidencias.map((evidencia) => (
-                                <div key={evidencia.id_evidencia} className="evidencia-item">
+                                <div key={evidencia.id_evidencia} className="evidencia-item" style={{ position: 'relative', cursor: 'pointer' }}>
                                     {evidencia.tipo_evidencia === 'image' ? (
                                         <>
                                             <img
-                                                src={`/evidencias/${evidencia.s3_key}`}
+                                                src={evidencia.url}
                                                 alt={evidencia.nombre_archivo_original}
                                                 className="evidencia-preview"
+                                                onClick={() => handleImageClick(evidencia)}
                                                 onError={(e) => {
                                                     e.target.style.display = 'none';
                                                     e.target.nextSibling.style.display = 'flex';
                                                 }}
+                                                style={{ cursor: 'pointer' }}
                                             />
                                             <div className="evidencia-icon" style={{ display: 'none' }}>
                                                 🖼️
                                             </div>
                                         </>
                                     ) : (
-                                        <div className="evidencia-icon">
+                                        <div
+                                            className="evidencia-icon"
+                                            onClick={() => handleDownload(evidencia)}
+                                            style={{ cursor: 'pointer' }}
+                                            title={`Descargar ${evidencia.nombre_archivo_original}`}
+                                        >
                                             {getFileIcon(evidencia.tipo_evidencia)}
                                         </div>
                                     )}
                                     <div className="evidencia-overlay">
                                         {evidencia.nombre_archivo_original}
                                     </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDownload(evidencia)}
+                                        title="Descargar evidencia"
+                                        style={{
+                                            position: 'absolute',
+                                            top: '0.5rem',
+                                            right: '0.5rem',
+                                            background: '#e0f2fe',
+                                            color: '#0284c7',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            padding: '0.25rem 0.5rem',
+                                            cursor: 'pointer',
+                                            fontSize: '1rem',
+                                            opacity: 0.9,
+                                            transition: 'opacity 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => e.target.style.opacity = 1}
+                                        onMouseLeave={(e) => e.target.style.opacity = 0.9}
+                                    >
+                                        ⬇️
+                                    </button>
                                 </div>
                             ))}
                         </div>
