@@ -39,3 +39,7 @@ tmp/
 temp/
 
 /generated/prisma
+
+# Locked files
+package-lock.json
+Frontend/package.json
