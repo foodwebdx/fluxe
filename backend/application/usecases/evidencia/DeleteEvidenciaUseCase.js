@@ -1,10 +1,12 @@
 const IUseCase = require('../../../domain/usecases/IUseCase');
 const EvidenciaRepository = require('../../../infrastructure/repositories/EvidenciaRepository');
+const S3Service = require('../../../infrastructure/services/S3Service');
 
 class DeleteEvidenciaUseCase extends IUseCase {
     constructor() {
         super();
         this.evidenciaRepository = new EvidenciaRepository();
+        this.s3Service = new S3Service();
     }
 
     async execute(id) {
@@ -13,19 +15,28 @@ class DeleteEvidenciaUseCase extends IUseCase {
                 throw new Error('El ID de la evidencia es requerido');
             }
 
-            // Verificar que la evidencia existe
-            const evidenciaExistente = await this.evidenciaRepository.findById(id);
-            if (!evidenciaExistente) {
+            // Obtener evidencia antes de eliminar
+            const evidencia = await this.evidenciaRepository.findById(id);
+
+            if (!evidencia) {
                 throw new Error('Evidencia no encontrada');
             }
 
-            // Eliminar la evidencia (nota: también deberías eliminar el archivo de S3)
+            // Eliminar archivo de S3
+            if (evidencia.s3_key) {
+                try {
+                    await this.s3Service.deleteFile(evidencia.s3_key);
+                } catch (s3Error) {
+                    console.error('Error al eliminar archivo de S3:', s3Error);
+                    // Continuar con la eliminación de la BD aunque falle S3
+                }
+            }
+
+            // Eliminar de la base de datos
             await this.evidenciaRepository.delete(id);
 
             return {
-                message: 'Evidencia eliminada exitosamente',
-                // Retornar el s3_key para que el controlador pueda eliminar el archivo de S3
-                s3_key: evidenciaExistente.s3_key
+                message: 'Evidencia eliminada exitosamente'
             };
         } catch (error) {
             console.error('Error en DeleteEvidenciaUseCase:', error);

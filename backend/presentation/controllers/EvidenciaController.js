@@ -50,7 +50,18 @@ class EvidenciaController {
 
     async create(req, res) {
         try {
-            const result = await this.createEvidenciaUseCase.execute(req.body);
+            // El archivo viene en req.file (gracias a multer)
+            const file = req.file;
+
+            // Los datos vienen en req.body
+            const evidenciaData = {
+                id_orden: parseInt(req.body.id_orden),
+                id_estado: parseInt(req.body.id_estado),
+                id_usuario: parseInt(req.body.id_usuario),
+                comentario: req.body.comentario || null
+            };
+
+            const result = await this.createEvidenciaUseCase.execute(evidenciaData, file);
 
             return res.status(201).json({
                 success: true,
