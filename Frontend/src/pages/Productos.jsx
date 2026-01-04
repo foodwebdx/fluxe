@@ -31,11 +31,11 @@ const Productos = () => {
     try {
       setLoading(true);
       const response = await fetch('http://localhost:3000/api/productos');
-      
+
       if (!response.ok) {
         throw new Error('Error al cargar los productos');
       }
-      
+
       const data = await response.json();
       setProductos(data.data || []);
       setError(null);
@@ -130,7 +130,7 @@ const Productos = () => {
 
     try {
       let response;
-      
+
       const payload = {
         ...formData,
         id_cliente: parseInt(formData.id_cliente)
@@ -206,7 +206,7 @@ const Productos = () => {
       <div className="dashboard">
         <div className="dashboard-header">
           <h1>Productos</h1>
-          <p className="subtitle" style={{color: '#ef4444'}}>Error: {error}</p>
+          <p className="subtitle" style={{ color: '#ef4444' }}>Error: {error}</p>
         </div>
       </div>
     );
@@ -255,7 +255,7 @@ const Productos = () => {
               <tbody>
                 {productos.length === 0 ? (
                   <tr>
-                    <td colSpan="6" style={{textAlign: 'center', padding: '2rem'}}>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>
                       No hay productos registrados
                     </td>
                   </tr>
@@ -292,7 +292,7 @@ const Productos = () => {
               </h2>
               <button className="modal-close" onClick={handleCloseModal}>&times;</button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="modal-form">
               {formError && (
                 <div className="form-error">
@@ -358,31 +358,49 @@ const Productos = () => {
                 </div>
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="identificador_interno">Identificador Interno</label>
-                  <input
-                    type="text"
-                    id="identificador_interno"
-                    name="identificador_interno"
-                    value={formData.identificador_interno}
-                    onChange={handleInputChange}
-                    disabled={modalMode === 'view'}
-                  />
-                </div>
+              {/* Mostrar identificador_interno solo en modo view o edit (generado automáticamente) */}
+              {modalMode !== 'create' && (
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="identificador_interno">Identificador Interno (Auto-generado)</label>
+                    <input
+                      type="text"
+                      id="identificador_interno"
+                      name="identificador_interno"
+                      value={formData.identificador_interno}
+                      disabled
+                      style={{ backgroundColor: '#f8fafc', cursor: 'not-allowed' }}
+                    />
+                  </div>
 
+                  <div className="form-group">
+                    <label htmlFor="identificador_unico_adicional">ID Adicional</label>
+                    <input
+                      type="text"
+                      id="identificador_unico_adicional"
+                      name="identificador_unico_adicional"
+                      value={formData.identificador_unico_adicional}
+                      onChange={handleInputChange}
+                      disabled={modalMode === 'view'}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Mostrar solo ID Adicional en modo create */}
+              {modalMode === 'create' && (
                 <div className="form-group">
-                  <label htmlFor="identificador_unico_adicional">ID Adicional</label>
+                  <label htmlFor="identificador_unico_adicional">ID Adicional (Opcional)</label>
                   <input
                     type="text"
                     id="identificador_unico_adicional"
                     name="identificador_unico_adicional"
                     value={formData.identificador_unico_adicional}
                     onChange={handleInputChange}
-                    disabled={modalMode === 'view'}
+                    placeholder="Ingrese un identificador adicional si es necesario"
                   />
                 </div>
-              </div>
+              )}
 
               <div className="form-group">
                 <label htmlFor="descripcion">Descripción</label>
@@ -416,8 +434,8 @@ const Productos = () => {
                 </button>
                 {modalMode !== 'view' && (
                   <button type="submit" className="btn-submit" disabled={formLoading}>
-                    {formLoading 
-                      ? (modalMode === 'edit' ? 'Actualizando...' : 'Creando...') 
+                    {formLoading
+                      ? (modalMode === 'edit' ? 'Actualizando...' : 'Creando...')
                       : (modalMode === 'edit' ? 'Actualizar Producto' : 'Crear Producto')}
                   </button>
                 )}

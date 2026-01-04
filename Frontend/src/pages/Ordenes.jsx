@@ -49,6 +49,23 @@ const Ordenes = ({ onVerOrden }) => {
   const [selectedEvidencia, setSelectedEvidencia] = useState(null); // Evidencia seleccionada para editar
   const [isEvidenceSubmitting, setIsEvidenceSubmitting] = useState(false);
 
+  // Estados para creación inline de cliente y producto
+  const [createClienteMode, setCreateClienteMode] = useState(false);
+  const [createProductoMode, setCreateProductoMode] = useState(false);
+  const [nuevoClienteData, setNuevoClienteData] = useState({
+    tipo_identificacion: '',
+    numero_identificacion: '',
+    nombre_completo: '',
+    telefono_contacto: '',
+    correo_electronico: ''
+  });
+  const [nuevoProductoData, setNuevoProductoData] = useState({
+    nombre_producto: '',
+    modelo: '',
+    numero_serie: '',
+    descripcion: ''
+  });
+
   useEffect(() => {
     fetchOrdenes();
     fetchFormData(); // Cargar datos para filtros
@@ -193,6 +210,45 @@ const Ordenes = ({ onVerOrden }) => {
     }
   };
 
+  // Handlers para creación inline de cliente
+  const handleToggleClienteForm = () => {
+    setCreateClienteMode(!createClienteMode);
+    if (createClienteMode) {
+      // Reset data when closing
+      setNuevoClienteData({
+        tipo_identificacion: '',
+        numero_identificacion: '',
+        nombre_completo: '',
+        telefono_contacto: '',
+        correo_electronico: ''
+      });
+    }
+  };
+
+  const handleClienteInputChange = (e) => {
+    const { name, value } = e.target;
+    setNuevoClienteData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handlers para creación inline de producto
+  const handleToggleProductoForm = () => {
+    setCreateProductoMode(!createProductoMode);
+    if (createProductoMode) {
+      // Reset data when closing
+      setNuevoProductoData({
+        nombre_producto: '',
+        modelo: '',
+        numero_serie: '',
+        descripcion: ''
+      });
+    }
+  };
+
+  const handleProductoInputChange = (e) => {
+    const { name, value } = e.target;
+    setNuevoProductoData(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleCloseModal = () => {
     setShowModal(false);
     setModalMode('create');
@@ -212,6 +268,23 @@ const Ordenes = ({ onVerOrden }) => {
     setEvidenciaArchivo(null);
     setEvidenciaPreview(null);
     setEvidencias([]);
+
+    // Reset inline creation states
+    setCreateClienteMode(false);
+    setCreateProductoMode(false);
+    setNuevoClienteData({
+      tipo_identificacion: '',
+      numero_identificacion: '',
+      nombre_completo: '',
+      telefono_contacto: '',
+      correo_electronico: ''
+    });
+    setNuevoProductoData({
+      nombre_producto: '',
+      modelo: '',
+      numero_serie: '',
+      descripcion: ''
+    });
   };
 
   const fetchEvidencias = async (idOrden) => {
@@ -438,21 +511,44 @@ const Ordenes = ({ onVerOrden }) => {
         }
       } else {
         // Crear nueva orden
+        const payload = {
+          id_flujo: parseInt(formData.id_flujo),
+          descripcion_servicio: formData.descripcion_servicio,
+          condiciones_pago: formData.condiciones_pago || null,
+          fecha_estimada_entrega: formData.fecha_estimada_entrega || null,
+          notas_orden: formData.notas_orden || null
+        };
+
+        // Agregar cliente (existente o nuevo)
+        if (createClienteMode && nuevoClienteData.nombre_completo) {
+          // Crear cliente inline
+          payload.cliente = nuevoClienteData;
+        } else if (formData.id_cliente) {
+          // Cliente existente
+          payload.id_cliente = parseInt(formData.id_cliente);
+        } else {
+          throw new Error('Debe seleccionar un cliente existente o crear uno nuevo');
+        }
+
+        // Agregar producto (existente o nuevo)
+        if (createProductoMode && nuevoProductoData.nombre_producto) {
+          // Crear producto inline
+          payload.producto = nuevoProductoData;
+        } else if (formData.id_producto) {
+          // Producto existente
+          payload.id_producto = parseInt(formData.id_producto);
+        } else {
+          throw new Error('Debe seleccionar un producto existente o crear uno nuevo');
+        }
+
+        // NO enviar id_estado_actual - el backend lo asigna automáticamente
+
         response = await fetch('http://localhost:3000/api/ordenes', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            id_cliente: parseInt(formData.id_cliente),
-            id_producto: parseInt(formData.id_producto),
-            id_flujo: parseInt(formData.id_flujo),
-            id_estado_actual: parseInt(formData.id_estado_actual),
-            descripcion_servicio: formData.descripcion_servicio,
-            condiciones_pago: formData.condiciones_pago || null,
-            fecha_estimada_entrega: formData.fecha_estimada_entrega || null,
-            notas_orden: formData.notas_orden || null
-          })
+          body: JSON.stringify(payload)
         });
 
         const data = await response.json();
@@ -725,41 +821,209 @@ const Ordenes = ({ onVerOrden }) => {
                 <>
                   <div className="form-row">
                     <div className="form-group">
-                      <label htmlFor="id_cliente">Cliente *</label>
-                      <select
-                        id="id_cliente"
-                        name="id_cliente"
-                        value={formData.id_cliente}
-                        onChange={handleInputChange}
-                        required={modalMode === 'create'}
-                        disabled={modalMode === 'view'}
-                      >
-                        <option value="">Seleccione un cliente</option>
-                        {clientes.map(cliente => (
-                          <option key={cliente.id_cliente} value={cliente.id_cliente}>
-                            {cliente.nombre_completo}
-                          </option>
-                        ))}
-                      </select>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <label htmlFor="id_cliente">Cliente *</label>
+                        {modalMode === 'create' && !createClienteMode && (
+                          <button
+                            type="button"
+                            onClick={handleToggleClienteForm}
+                            className="btn-sm btn-secondary"
+                            style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                          >
+                            + Crear Nuevo
+                          </button>
+                        )}
+                      </div>
+
+                      {!createClienteMode ? (
+                        <select
+                          id="id_cliente"
+                          name="id_cliente"
+                          value={formData.id_cliente}
+                          onChange={handleInputChange}
+                          required={modalMode === 'create' && !createClienteMode}
+                          disabled={modalMode === 'view'}
+                        >
+                          <option value="">Seleccione un cliente</option>
+                          {clientes.map(cliente => (
+                            <option key={cliente.id_cliente} value={cliente.id_cliente}>
+                              {cliente.nombre_completo}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div style={{ padding: '1rem', background: '#f0f4ff', borderRadius: '6px', border: '1px solid #cbd5e0' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                            <strong style={{ fontSize: '0.875rem', color: '#475569' }}>Crear Nuevo Cliente</strong>
+                            <button
+                              type="button"
+                              onClick={handleToggleClienteForm}
+                              className="btn-sm btn-danger"
+                              style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
+                            >
+                              ✕ Cancelar
+                            </button>
+                          </div>
+                          <div style={{ display: 'grid', gap: '0.5rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '0.5rem' }}>
+                              <div>
+                                <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>Tipo *</label>
+                                <select
+                                  name="tipo_identificacion"
+                                  value={nuevoClienteData.tipo_identificacion}
+                                  onChange={handleClienteInputChange}
+                                  required={createClienteMode}
+                                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
+                                >
+                                  <option value="">-</option>
+                                  <option value="CC">CC</option>
+                                  <option value="NIT">NIT</option>
+                                  <option value="CE">CE</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>Número *</label>
+                                <input
+                                  type="text"
+                                  name="numero_identificacion"
+                                  value={nuevoClienteData.numero_identificacion}
+                                  onChange={handleClienteInputChange}
+                                  required={createClienteMode}
+                                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>Nombre Completo *</label>
+                              <input
+                                type="text"
+                                name="nombre_completo"
+                                value={nuevoClienteData.nombre_completo}
+                                onChange={handleClienteInputChange}
+                                required={createClienteMode}
+                                style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
+                              />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                              <div>
+                                <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>Email *</label>
+                                <input
+                                  type="email"
+                                  name="correo_electronico"
+                                  value={nuevoClienteData.correo_electronico}
+                                  onChange={handleClienteInputChange}
+                                  required={createClienteMode}
+                                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
+                                />
+                              </div>
+                              <div>
+                                <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>Teléfono *</label>
+                                <input
+                                  type="text"
+                                  name="telefono_contacto"
+                                  value={nuevoClienteData.telefono_contacto}
+                                  onChange={handleClienteInputChange}
+                                  required={createClienteMode}
+                                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="form-group">
-                      <label htmlFor="id_producto">Producto *</label>
-                      <select
-                        id="id_producto"
-                        name="id_producto"
-                        value={formData.id_producto}
-                        onChange={handleInputChange}
-                        required={modalMode === 'create'}
-                        disabled={modalMode === 'view'}
-                      >
-                        <option value="">Seleccione un producto</option>
-                        {productos.map(producto => (
-                          <option key={producto.id_producto} value={producto.id_producto}>
-                            {producto.nombre_producto} {producto.modelo && `- ${producto.modelo}`}
-                          </option>
-                        ))}
-                      </select>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <label htmlFor="id_producto">Producto *</label>
+                        {modalMode === 'create' && !createProductoMode && (
+                          <button
+                            type="button"
+                            onClick={handleToggleProductoForm}
+                            className="btn-sm btn-secondary"
+                            style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                          >
+                            + Crear Nuevo
+                          </button>
+                        )}
+                      </div>
+
+                      {!createProductoMode ? (
+                        <select
+                          id="id_producto"
+                          name="id_producto"
+                          value={formData.id_producto}
+                          onChange={handleInputChange}
+                          required={modalMode === 'create' && !createProductoMode}
+                          disabled={modalMode === 'view'}
+                        >
+                          <option value="">Seleccione un producto</option>
+                          {productos.map(producto => (
+                            <option key={producto.id_producto} value={producto.id_producto}>
+                              {producto.nombre_producto} {producto.modelo && `- ${producto.modelo}`}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div style={{ padding: '1rem', background: '#fff4f0', borderRadius: '6px', border: '1px solid #cbd5e0' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                            <strong style={{ fontSize: '0.875rem', color: '#475569' }}>Crear Nuevo Producto</strong>
+                            <button
+                              type="button"
+                              onClick={handleToggleProductoForm}
+                              className="btn-sm btn-danger"
+                              style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
+                            >
+                              ✕ Cancelar
+                            </button>
+                          </div>
+                          <div style={{ display: 'grid', gap: '0.5rem' }}>
+                            <div>
+                              <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>Nombre *</label>
+                              <input
+                                type="text"
+                                name="nombre_producto"
+                                value={nuevoProductoData.nombre_producto}
+                                onChange={handleProductoInputChange}
+                                required={createProductoMode}
+                                style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
+                              />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                              <div>
+                                <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>Modelo</label>
+                                <input
+                                  type="text"
+                                  name="modelo"
+                                  value={nuevoProductoData.modelo}
+                                  onChange={handleProductoInputChange}
+                                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
+                                />
+                              </div>
+                              <div>
+                                <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>N° Serie</label>
+                                <input
+                                  type="text"
+                                  name="numero_serie"
+                                  value={nuevoProductoData.numero_serie}
+                                  onChange={handleProductoInputChange}
+                                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>Descripción</label>
+                              <textarea
+                                name="descripcion"
+                                value={nuevoProductoData.descripcion}
+                                onChange={handleProductoInputChange}
+                                rows="2"
+                                style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -783,27 +1047,34 @@ const Ordenes = ({ onVerOrden }) => {
                       </select>
                     </div>
 
-                    <div className="form-group">
-                      <label htmlFor="id_estado_actual">
-                        {modalMode === 'create' ? 'Estado Inicial *' : 'Estado Actual'}
-                      </label>
-                      <select
-                        id="id_estado_actual"
-                        name="id_estado_actual"
-                        value={formData.id_estado_actual}
-                        onChange={handleInputChange}
-                        required={modalMode === 'create'}
-                        disabled={modalMode === 'view'}
-                      >
-                        <option value="">Seleccione un estado</option>
-                        {/* Mostrar estados basados en el flujo si están disponibles en modalMode=create, sino todos */}
-                        {estados.map(estado => (
-                          <option key={estado.id_estado} value={estado.id_estado}>
-                            {estado.nombre_estado}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    {/* Ocultar estado inicial en modo create - se asigna automáticamente */}
+                    {modalMode !== 'create' && (
+                      <div className="form-group">
+                        <label htmlFor="id_estado_actual">Estado Actual</label>
+                        <select
+                          id="id_estado_actual"
+                          name="id_estado_actual"
+                          value={formData.id_estado_actual}
+                          onChange={handleInputChange}
+                          disabled={modalMode === 'view'}
+                        >
+                          <option value="">Seleccione un estado</option>
+                          {estados.map(estado => (
+                            <option key={estado.id_estado} value={estado.id_estado}>
+                              {estado.nombre_estado}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    {modalMode === 'create' && (
+                      <div className="form-group">
+                        <label>Estado Inicial</label>
+                        <div style={{ padding: '0.75rem', background: '#f0f4ff', borderRadius: '6px', color: '#667eea', fontSize: '0.875rem' }}>
+                          ℹ️ El estado inicial será asignado automáticamente al crear la orden
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="form-group">
