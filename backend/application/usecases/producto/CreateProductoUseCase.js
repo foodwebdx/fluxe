@@ -20,6 +20,11 @@ class CreateProductoUseCase extends IUseCase {
                 throw new Error('El cliente especificado no existe');
             }
 
+            // Auto-generar identificador_interno si no fue proporcionado
+            if (!productoData.identificador_interno || productoData.identificador_interno.trim() === '') {
+                productoData.identificador_interno = this.generateIdentificadorInterno();
+            }
+
             // Crear producto
             const nuevoProducto = await this.productoRepository.create(productoData);
 
@@ -31,6 +36,12 @@ class CreateProductoUseCase extends IUseCase {
             console.error('Error en CreateProductoUseCase:', error);
             throw error;
         }
+    }
+
+    generateIdentificadorInterno() {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+        return `PROD-${timestamp}-${random}`;
     }
 
     validateProductoData(data) {
