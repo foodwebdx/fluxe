@@ -63,22 +63,19 @@ const EvidenciasSection = ({
         setUploading(true);
 
         try {
-            const evidenciaData = {
-                id_orden: ordenId,
-                id_estado: estadoId,
-                id_usuario: 1, // TODO: Obtener del usuario logueado
-                tipo_evidencia: selectedFile.type.startsWith('image/') ? 'image' : 'document',
-                s3_key: `evidencias/${ordenId}/${Date.now()}_${selectedFile.name}`,
-                nombre_archivo_original: selectedFile.name,
-                comentario: comentario.trim() || null
-            };
+            // Crear FormData para enviar archivo
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('id_orden', ordenId);
+            formData.append('id_estado', estadoId);
+            formData.append('id_usuario', 1); // TODO: Obtener del usuario logueado
+            if (comentario.trim()) {
+                formData.append('comentario', comentario.trim());
+            }
 
             const response = await fetch('http://localhost:3000/api/evidencias', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(evidenciaData)
+                body: formData // NO enviar Content-Type, el navegador lo configura automáticamente
             });
 
             if (!response.ok) {
@@ -107,7 +104,8 @@ const EvidenciasSection = ({
 
     const getFileIcon = (tipo) => {
         if (tipo === 'image') return '🖼️';
-        if (tipo === 'document') return '📄';
+        if (tipo === 'pdf') return '📄';
+        if (tipo === 'document') return '📝';
         return '📎';
     };
 
@@ -154,7 +152,7 @@ const EvidenciasSection = ({
                             {evidencia.tipo_evidencia === 'image' ? (
                                 <>
                                     <img
-                                        src={`/evidencias/${evidencia.s3_key}`}
+                                        src={evidencia.url}
                                         alt={evidencia.nombre_archivo_original}
                                         className="evidencia-preview"
                                         onError={(e) => {
@@ -167,9 +165,16 @@ const EvidenciasSection = ({
                                     </div>
                                 </>
                             ) : (
-                                <div className="evidencia-icon">
+                                <a
+                                    href={evidencia.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="evidencia-icon"
+                                    style={{ textDecoration: 'none', cursor: 'pointer' }}
+                                    title={`Descargar ${evidencia.nombre_archivo_original}`}
+                                >
                                     {getFileIcon(evidencia.tipo_evidencia)}
-                                </div>
+                                </a>
                             )}
                             <div className="evidencia-overlay">
                                 {evidencia.nombre_archivo_original}
