@@ -45,10 +45,10 @@ const TimelineEstado = ({
                     : '--'}
             </div>
 
-            {/* Botón retroceder para el estado actual si hay estados previos */}
-            {type === 'current' && onRetroceder && (
+            {/* Botón retroceder para el último estado previo */}
+            {type === 'completed' && onRetroceder && (
                 <button className="btn-retroceder" onClick={onRetroceder}>
-                    ⬅️ Retroceder
+                    ← Retroceder
                 </button>
             )}
 
