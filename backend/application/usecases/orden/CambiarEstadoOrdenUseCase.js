@@ -2,6 +2,8 @@ const IUseCase = require('../../../domain/usecases/IUseCase');
 const OrdenRepository = require('../../../infrastructure/repositories/OrdenRepository');
 const FlujoRepository = require('../../../infrastructure/repositories/FlujoRepository');
 const HistorialEstadoRepository = require('../../../infrastructure/repositories/HistorialEstadoRepository');
+const ClienteRepository = require('../../../infrastructure/repositories/ClienteRepository');
+const WhatsAppService = require('../../../infrastructure/services/WhatsAppService').default;
 
 class CambiarEstadoOrdenUseCase extends IUseCase {
     constructor() {
@@ -9,6 +11,7 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
         this.ordenRepository = new OrdenRepository();
         this.flujoRepository = new FlujoRepository();
         this.historialRepository = new HistorialEstadoRepository();
+        this.clienteRepository = new ClienteRepository();
     }
 
     async execute(idOrden, nuevoEstadoId, usuarioId = 1) {
@@ -84,6 +87,11 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
             // 10. Obtener orden actualizada
             const ordenActualizada = await this.ordenRepository.findById(idOrden);
 
+            // 11. Enviar notificación de WhatsApp (sin bloquear el flujo)
+            this.enviarNotificacionWhatsApp(ordenActualizada, nuevoEstado).catch(error => {
+                console.error('Error enviando notificación WhatsApp (no crítico):', error);
+            });
+
             return {
                 data: ordenActualizada,
                 message: 'Estado de la orden actualizado exitosamente',
@@ -101,6 +109,38 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
         } catch (error) {
             console.error('Error en CambiarEstadoOrdenUseCase:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Envía notificación de WhatsApp al cliente sobre el cambio de estado
+     * Este método es asíncrono y no bloquea el flujo principal
+     */
+    async enviarNotificacionWhatsApp(orden, nuevoEstado) {
+        try {
+            // Obtener datos del cliente
+            const cliente = await this.clienteRepository.findById(orden.id_cliente);
+
+            if (!cliente) {
+                console.log('Cliente no encontrado para notificación WhatsApp');
+                return;
+            }
+
+            // Enviar notificación
+            const resultado = await WhatsAppService.notifyStatusChange(
+                cliente,
+                orden,
+                nuevoEstado.estados || { nombre_estado: 'Estado actualizado' }
+            );
+
+            if (resultado.sent) {
+                console.log(`✅ Notificación WhatsApp enviada a ${cliente.nombre_completo} (${cliente.telefono_contacto})`);
+            } else {
+                console.log(`⚠️ No se envió notificación WhatsApp: ${resultado.reason || resultado.error}`);
+            }
+        } catch (error) {
+            // No lanzar error para no afectar el flujo principal
+            console.error('Error en enviarNotificacionWhatsApp:', error.message);
         }
     }
 }
