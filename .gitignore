@@ -43,3 +43,5 @@ temp/
 # Locked files
 package-lock.json
 Frontend/package.json
+backend/package.json
+backend/package-lock.json
