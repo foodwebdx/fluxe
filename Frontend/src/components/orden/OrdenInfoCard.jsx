@@ -1,4 +1,4 @@
-const OrdenInfoCard = ({ orden }) => {
+const OrdenInfoCard = ({ orden, isInFinalState }) => {
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
         const date = new Date(dateString);
@@ -99,8 +99,8 @@ const OrdenInfoCard = ({ orden }) => {
                     </div>
                 )}
 
-                {/* Fecha de Cierre */}
-                {orden.fecha_cierre && (
+                {/* Fecha de Cierre - Solo mostrar si está en el último estado */}
+                {orden.fecha_cierre && isInFinalState && (
                     <div className="info-section">
                         <div className="info-label">✅ Fecha de Cierre</div>
                         <div className="info-value">{formatDate(orden.fecha_cierre)}</div>
