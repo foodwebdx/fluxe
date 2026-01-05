@@ -119,6 +119,10 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
         );
     }
 
+    // Verificar si está en el último estado del flujo
+    const isInFinalState = estadosFlujo.length > 0 &&
+        estadosFlujo[estadosFlujo.length - 1]?.id_estado === orden.id_estado_actual;
+
     return (
         <div className="orden-detail-container">
             {/* Header con botón de regreso */}
@@ -132,7 +136,7 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
 
             {/* Información de la orden */}
             <div className="orden-detail-grid">
-                <OrdenInfoCard orden={orden} />
+                <OrdenInfoCard orden={orden} isInFinalState={isInFinalState} />
             </div>
 
             {/* Línea de tiempo de estados */}

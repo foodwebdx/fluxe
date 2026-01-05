@@ -154,12 +154,13 @@ const EstadosTimeline = ({
 
             <div className="timeline-wrapper">
                 {/* Estados Previos */}
-                {estadosPrevios.map(estado => (
+                {estadosPrevios.map((estado, index) => (
                     <TimelineEstado
                         key={estado.id_estado}
                         estado={estado}
                         type="completed"
                         onClick={() => handleVerEstado(estado)}
+                        onRetroceder={index === estadosPrevios.length - 1 ? handleRetrocederEstado : null}
                     />
                 ))}
 
@@ -171,7 +172,6 @@ const EstadosTimeline = ({
                         ordenId={ordenId}
                         evidencias={evidencias.filter(e => e.id_estado === estadoActual.id_estado)}
                         onRefresh={onRefresh}
-                        onRetroceder={estadosPrevios.length > 0 ? handleRetrocederEstado : null}
                     />
                 )}
 
