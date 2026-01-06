@@ -1,55 +1,54 @@
 import './Sidebar.css';
 
-const Sidebar = ({ activeView, setActiveView }) => {
+const Sidebar = ({ activeView, setActiveView, user, onLogout, allowedViews }) => {
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'ordenes', label: 'Ordenes', icon: '📦' },
+    { id: 'clientes', label: 'Clientes', icon: '👥' },
+    { id: 'productos', label: 'Productos', icon: '📦' },
+    { id: 'flujos', label: 'Flujos', icon: '🌊' },
+    { id: 'estados', label: 'Estados', icon: '⚙️' },
+    { id: 'usuarios', label: 'Usuarios', icon: '🧑‍💼' },
+  ];
+
+  const visibleItems = Array.isArray(allowedViews) && allowedViews.length > 0
+    ? navItems.filter((item) => allowedViews.includes(item.id))
+    : navItems;
+
+  const displayName = user?.nombre || user?.usuario_login || 'Usuario';
+  const rolesLabel = (user?.roles || [])
+    .map((rol) => rol.nombre_rol)
+    .filter(Boolean)
+    .join(', ');
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <h2>Fluxe</h2>
       </div>
       <nav className="sidebar-nav">
-        <button
-          className={`nav-item ${activeView === 'dashboard' ? 'active' : ''}`}
-          onClick={() => setActiveView('dashboard')}
-        >
-          <span className="icon">📊</span>
-          <span>Dashboard</span>
-        </button>
-        <button
-          className={`nav-item ${activeView === 'ordenes' ? 'active' : ''}`}
-          onClick={() => setActiveView('ordenes')}
-        >
-          <span className="icon">📦</span>
-          <span>Órdenes</span>
-        </button>
-        <button
-          className={`nav-item ${activeView === 'clientes' ? 'active' : ''}`}
-          onClick={() => setActiveView('clientes')}
-        >
-          <span className="icon">👥</span>
-          <span>Clientes</span>
-        </button>
-        <button
-          className={`nav-item ${activeView === 'productos' ? 'active' : ''}`}
-          onClick={() => setActiveView('productos')}
-        >
-          <span className="icon">📦</span>
-          <span>Productos</span>
-        </button>
-        <button
-          className={`nav-item ${activeView === 'flujos' ? 'active' : ''}`}
-          onClick={() => setActiveView('flujos')}
-        >
-          <span className="icon">🌊</span>
-          <span>Flujos</span>
-        </button>
-        <button
-          className={`nav-item ${activeView === 'estados' ? 'active' : ''}`}
-          onClick={() => setActiveView('estados')}
-        >
-          <span className="icon">⚙️</span>
-          <span>Estados</span>
-        </button>
+        {visibleItems.map((item) => (
+          <button
+            key={item.id}
+            className={`nav-item ${activeView === item.id ? 'active' : ''}`}
+            onClick={() => setActiveView(item.id)}
+          >
+            <span className="icon">{item.icon}</span>
+            <span>{item.label}</span>
+          </button>
+        ))}
       </nav>
+      <div className="sidebar-footer">
+        <div className="sidebar-user">
+          <div className="sidebar-user-name">{displayName}</div>
+          {rolesLabel && <div className="sidebar-user-role">{rolesLabel}</div>}
+        </div>
+        {onLogout && (
+          <button className="logout-button" onClick={onLogout}>
+            Salir
+          </button>
+        )}
+      </div>
     </aside>
   );
 };
