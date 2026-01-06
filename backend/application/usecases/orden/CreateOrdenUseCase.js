@@ -4,6 +4,7 @@ const ClienteRepository = require('../../../infrastructure/repositories/ClienteR
 const ProductoRepository = require('../../../infrastructure/repositories/ProductoRepository');
 const FlujoRepository = require('../../../infrastructure/repositories/FlujoRepository');
 const HistorialEstadoRepository = require('../../../infrastructure/repositories/HistorialEstadoRepository');
+const CreateProductoUseCase = require('../producto/CreateProductoUseCase');
 
 class CreateOrdenUseCase extends IUseCase {
     constructor() {
@@ -13,6 +14,7 @@ class CreateOrdenUseCase extends IUseCase {
         this.productoRepository = new ProductoRepository();
         this.flujoRepository = new FlujoRepository();
         this.historialRepository = new HistorialEstadoRepository();
+        this.createProductoUseCase = new CreateProductoUseCase();
     }
 
     async execute(ordenData) {
@@ -39,12 +41,13 @@ class CreateOrdenUseCase extends IUseCase {
             // 3. Validar/Crear Producto
             let productoId = ordenData.id_producto;
             if (ordenData.producto && !productoId) {
-                // Crear nuevo producto asociado al cliente
-                const nuevoProducto = await this.productoRepository.create({
+                // Crear nuevo producto asociado al cliente usando el use case
+                // para que se genere automáticamente el identificador_interno
+                const resultado = await this.createProductoUseCase.execute({
                     ...ordenData.producto,
                     id_cliente: clienteId
                 });
-                productoId = nuevoProducto.id_producto;
+                productoId = resultado.data.id_producto;
             } else if (productoId) {
                 // Verificar que el producto existe
                 const producto = await this.productoRepository.findById(productoId);
