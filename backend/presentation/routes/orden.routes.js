@@ -27,4 +27,7 @@ router.put('/:id', (req, res) => ordenController.update(req, res));
 // PUT /api/ordenes/:id/estado - Cambiar estado de una orden
 router.put('/:id/estado', (req, res) => ordenController.cambiarEstado(req, res));
 
+// DELETE /api/ordenes/:id - Eliminar una orden
+router.delete('/:id', (req, res) => ordenController.delete(req, res));
+
 module.exports = router;

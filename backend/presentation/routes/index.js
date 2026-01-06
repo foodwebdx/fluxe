@@ -61,7 +61,7 @@ router.get('/', (req, res) => {
       },
       ordenes: {
         path: '/api/ordenes',
-        methods: ['GET', 'POST', 'PUT'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
         description: 'Gestión completa de órdenes de servicio (RF-01)',
         endpoints: [
           'GET /api/ordenes - Listar todas (filtros: ?id_cliente, ?id_estado, ?id_flujo)',
@@ -70,7 +70,8 @@ router.get('/', (req, res) => {
           'GET /api/ordenes/estado/:idEstado - Órdenes por estado',
           'POST /api/ordenes - Crear orden',
           'PUT /api/ordenes/:id - Actualizar orden',
-          'PUT /api/ordenes/:id/estado - Cambiar estado'
+          'PUT /api/ordenes/:id/estado - Cambiar estado',
+          'DELETE /api/ordenes/:id - Eliminar orden'
         ]
       },
       historial: {
