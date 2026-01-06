@@ -57,13 +57,18 @@ const Ordenes = ({ onVerOrden }) => {
     numero_identificacion: '',
     nombre_completo: '',
     telefono_contacto: '',
-    correo_electronico: ''
+    correo_electronico: '',
+    tipo_direccion: '',
+    direccion: '',
+    notas_cliente: ''
   });
   const [nuevoProductoData, setNuevoProductoData] = useState({
     nombre_producto: '',
     modelo: '',
     numero_serie: '',
-    descripcion: ''
+    descripcion: '',
+    identificador_unico_adicional: '',
+    notas_producto: ''
   });
 
   useEffect(() => {
@@ -220,7 +225,10 @@ const Ordenes = ({ onVerOrden }) => {
         numero_identificacion: '',
         nombre_completo: '',
         telefono_contacto: '',
-        correo_electronico: ''
+        correo_electronico: '',
+        tipo_direccion: '',
+        direccion: '',
+        notas_cliente: ''
       });
     }
   };
@@ -239,7 +247,9 @@ const Ordenes = ({ onVerOrden }) => {
         nombre_producto: '',
         modelo: '',
         numero_serie: '',
-        descripcion: ''
+        descripcion: '',
+        identificador_unico_adicional: '',
+        notas_producto: ''
       });
     }
   };
@@ -277,13 +287,18 @@ const Ordenes = ({ onVerOrden }) => {
       numero_identificacion: '',
       nombre_completo: '',
       telefono_contacto: '',
-      correo_electronico: ''
+      correo_electronico: '',
+      tipo_direccion: '',
+      direccion: '',
+      notas_cliente: ''
     });
     setNuevoProductoData({
       nombre_producto: '',
       modelo: '',
       numero_serie: '',
-      descripcion: ''
+      descripcion: '',
+      identificador_unico_adicional: '',
+      notas_producto: ''
     });
   };
 
@@ -431,6 +446,25 @@ const Ordenes = ({ onVerOrden }) => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!confirm('¿Está seguro de eliminar esta orden? Esta acción no se puede deshacer.')) return;
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/ordenes/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Error al eliminar la orden');
+      }
+
+      await fetchOrdenes();
+    } catch (err) {
+      console.error('Error:', err);
+      alert(err.message);
+    }
+  };
 
   // Filtrar órdenes según los filtros aplicados
   const ordenesFiltradas = ordenes.filter(orden => {
@@ -787,6 +821,7 @@ const Ordenes = ({ onVerOrden }) => {
                       <td>{formatDate(orden.fecha_creacion)}</td>
                       <td>
                         <button className="btn-sm btn-primary" onClick={() => onVerOrden && onVerOrden(orden.id_orden)}>Ver</button>
+                        <button className="btn-sm btn-danger" onClick={() => handleDelete(orden.id_orden)}>Eliminar</button>
                       </td>
                     </tr>
                   ))
@@ -877,8 +912,11 @@ const Ordenes = ({ onVerOrden }) => {
                                 >
                                   <option value="">-</option>
                                   <option value="CC">CC</option>
-                                  <option value="NIT">NIT</option>
                                   <option value="CE">CE</option>
+                                  <option value="NIT">NIT</option>
+                                  <option value="TI">TI</option>
+                                  <option value="PP">PP</option>
+                                  <option value="PEP">PEP</option>
                                 </select>
                               </div>
                               <div>
@@ -927,6 +965,40 @@ const Ordenes = ({ onVerOrden }) => {
                                   style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
                                 />
                               </div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                              <div>
+                                <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>Tipo Dirección</label>
+                                <input
+                                  type="text"
+                                  name="tipo_direccion"
+                                  value={nuevoClienteData.tipo_direccion}
+                                  onChange={handleClienteInputChange}
+                                  placeholder="Casa, Oficina, etc."
+                                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
+                                />
+                              </div>
+                              <div>
+                                <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>Dirección</label>
+                                <input
+                                  type="text"
+                                  name="direccion"
+                                  value={nuevoClienteData.direccion}
+                                  onChange={handleClienteInputChange}
+                                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>Notas</label>
+                              <textarea
+                                name="notas_cliente"
+                                value={nuevoClienteData.notas_cliente}
+                                onChange={handleClienteInputChange}
+                                rows="2"
+                                placeholder="Notas adicionales..."
+                                style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
+                              />
                             </div>
                           </div>
                         </div>
@@ -1012,12 +1084,35 @@ const Ordenes = ({ onVerOrden }) => {
                               </div>
                             </div>
                             <div>
+                              <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>ID Adicional</label>
+                              <input
+                                type="text"
+                                name="identificador_unico_adicional"
+                                value={nuevoProductoData.identificador_unico_adicional}
+                                onChange={handleProductoInputChange}
+                                placeholder="Identificador adicional (opcional)"
+                                style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
+                              />
+                            </div>
+                            <div>
                               <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>Descripción</label>
                               <textarea
                                 name="descripcion"
                                 value={nuevoProductoData.descripcion}
                                 onChange={handleProductoInputChange}
                                 rows="2"
+                                placeholder="Descripción del producto..."
+                                style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
+                              />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.25rem' }}>Notas</label>
+                              <textarea
+                                name="notas_producto"
+                                value={nuevoProductoData.notas_producto}
+                                onChange={handleProductoInputChange}
+                                rows="2"
+                                placeholder="Notas adicionales..."
                                 style={{ width: '100%', padding: '0.5rem', fontSize: '0.875rem' }}
                               />
                             </div>
