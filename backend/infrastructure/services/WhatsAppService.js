@@ -164,7 +164,7 @@ class WhatsAppService {
 
         try {
             const phoneNumber = this.formatPhoneNumber(cliente.telefono_contacto);
-            
+
             // Formatear fecha en español
             const fechaFormateada = new Date(nuevaFecha).toLocaleDateString('es-ES', {
                 day: '2-digit',
@@ -173,9 +173,9 @@ class WhatsAppService {
             });
 
             // Obtener nombre del producto
-            const nombreProducto = orden.producto?.nombre_producto || 
-                                  orden.productos?.nombre_producto || 
-                                  'tu producto';
+            const nombreProducto = orden.producto?.nombre_producto ||
+                orden.productos?.nombre_producto ||
+                'tu producto';
 
             // Intentar enviar con template primero
             try {
@@ -224,7 +224,7 @@ class WhatsAppService {
             } catch (templateError) {
                 // Si el template no existe, enviar mensaje de texto
                 console.log('Template not found, sending text message instead');
-                
+
                 const mensaje = `Hola ${cliente.nombre_completo},\n\n` +
                     `Te informamos que la fecha estimada de entrega de ${nombreProducto} ` +
                     `ha sido actualizada.\n\n` +
@@ -235,6 +235,52 @@ class WhatsAppService {
             }
         } catch (error) {
             console.error('Error sending WhatsApp delivery date notification:', error);
+            return {
+                sent: false,
+                error: error.message,
+                timestamp: new Date()
+            };
+        }
+    }
+
+    /**
+     * Envía una notificación de orden completada
+     * Envía directamente como mensaje de texto para evitar problemas con templates
+     * @param {Object} cliente - Datos del cliente
+     * @param {Object} orden - Datos de la orden
+     * @returns {Promise<Object>} - Resultado del envío
+     */
+    async notifyOrderCompleted(cliente, orden) {
+        if (!this.isConfigured()) {
+            console.log('WhatsApp notifications disabled or not configured');
+            return { sent: false, reason: 'service_disabled' };
+        }
+
+        if (!cliente.telefono_contacto) {
+            console.log('Cliente sin teléfono de contacto');
+            return { sent: false, reason: 'no_phone_number' };
+        }
+
+        try {
+            const phoneNumber = this.formatPhoneNumber(cliente.telefono_contacto);
+
+            // Enviar directamente como mensaje de texto
+            const mensaje = `¡Excelente noticia ${cliente.nombre_completo}!\n\n` +
+                `Tu orden #${orden.id_orden} ha sido completada.\n\n` +
+                `Gracias por confiar en nosotros.`;
+
+            const resultado = await this.sendTextMessage(phoneNumber, mensaje);
+
+            if (resultado.sent) {
+                console.log('WhatsApp order completed notification sent successfully:', {
+                    to: phoneNumber,
+                    orden: orden.id_orden
+                });
+            }
+
+            return resultado;
+        } catch (error) {
+            console.error('Error sending WhatsApp order completed notification:', error);
             return {
                 sent: false,
                 error: error.message,
