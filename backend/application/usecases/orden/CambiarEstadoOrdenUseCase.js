@@ -76,9 +76,12 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
                 fecha_hora_cambio: new Date()
             });
 
-            // 9. Si es el último estado del flujo, cerrar la orden
-            const ultimoEstado = estadosFlujo[estadosFlujo.length - 1];
-            if (nuevoEstadoId === ultimoEstado.id_estado) {
+            // 9. Determinar si es el último estado del flujo (basado en la posición más alta)
+            const posicionMaxima = Math.max(...estadosFlujo.map(e => e.posicion));
+            const esUltimoEstado = nuevoEstadoPos === posicionMaxima;
+
+            // Si es el último estado del flujo, cerrar la orden
+            if (esUltimoEstado) {
                 await this.ordenRepository.update(idOrden, {
                     fecha_cierre: new Date()
                 });
@@ -88,7 +91,7 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
             const ordenActualizada = await this.ordenRepository.findById(idOrden);
 
             // 11. Enviar notificación de WhatsApp (sin bloquear el flujo)
-            this.enviarNotificacionWhatsApp(ordenActualizada, nuevoEstado).catch(error => {
+            this.enviarNotificacionWhatsApp(ordenActualizada, nuevoEstado, esUltimoEstado).catch(error => {
                 console.error('Error enviando notificación WhatsApp (no crítico):', error);
             });
 
@@ -116,7 +119,7 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
      * Envía notificación de WhatsApp al cliente sobre el cambio de estado
      * Este método es asíncrono y no bloquea el flujo principal
      */
-    async enviarNotificacionWhatsApp(orden, nuevoEstado) {
+    async enviarNotificacionWhatsApp(orden, nuevoEstado, esUltimoEstado = false) {
         try {
             // Obtener datos del cliente
             const cliente = await this.clienteRepository.findById(orden.id_cliente);
@@ -126,17 +129,30 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
                 return;
             }
 
-            // Enviar notificación
-            const resultado = await WhatsAppService.notifyStatusChange(
-                cliente,
-                orden,
-                nuevoEstado.estados || { nombre_estado: 'Estado actualizado' }
-            );
+            let resultado;
 
-            if (resultado.sent) {
-                console.log(`✅ Notificación WhatsApp enviada a ${cliente.nombre_completo} (${cliente.telefono_contacto})`);
+            // Si es el último estado, usar notificación de orden completada
+            if (esUltimoEstado) {
+                resultado = await WhatsAppService.notifyOrderCompleted(cliente, orden);
+
+                if (resultado.sent) {
+                    console.log(`✅ Notificación de orden completada enviada a ${cliente.nombre_completo} (${cliente.telefono_contacto})`);
+                } else {
+                    console.log(`⚠️ No se envió notificación de orden completada: ${resultado.reason || resultado.error}`);
+                }
             } else {
-                console.log(`⚠️ No se envió notificación WhatsApp: ${resultado.reason || resultado.error}`);
+                // Para cambios de estado normales, usar template de cambio de estado
+                resultado = await WhatsAppService.notifyStatusChange(
+                    cliente,
+                    orden,
+                    nuevoEstado.estados || { nombre_estado: 'Estado actualizado' }
+                );
+
+                if (resultado.sent) {
+                    console.log(`✅ Notificación de cambio de estado enviada a ${cliente.nombre_completo} (${cliente.telefono_contacto})`);
+                } else {
+                    console.log(`⚠️ No se envió notificación de cambio de estado: ${resultado.reason || resultado.error}`);
+                }
             }
         } catch (error) {
             // No lanzar error para no afectar el flujo principal

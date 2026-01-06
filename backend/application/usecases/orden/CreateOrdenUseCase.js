@@ -5,6 +5,7 @@ const ProductoRepository = require('../../../infrastructure/repositories/Product
 const FlujoRepository = require('../../../infrastructure/repositories/FlujoRepository');
 const HistorialEstadoRepository = require('../../../infrastructure/repositories/HistorialEstadoRepository');
 const CreateProductoUseCase = require('../producto/CreateProductoUseCase');
+const WhatsAppService = require('../../../infrastructure/services/WhatsAppService').default;
 
 class CreateOrdenUseCase extends IUseCase {
     constructor() {
@@ -112,6 +113,11 @@ class CreateOrdenUseCase extends IUseCase {
             // 7. Obtener la orden completa con todas las relaciones
             const ordenCompleta = await this.ordenRepository.findById(nuevaOrden.id_orden);
 
+            // 8. Enviar notificación de WhatsApp (sin bloquear el flujo)
+            this.enviarNotificacionOrdenCreada(ordenCompleta, clienteId).catch(error => {
+                console.error('Error enviando notificación WhatsApp (no crítico):', error);
+            });
+
             return {
                 data: ordenCompleta,
                 message: 'Orden creada exitosamente',
@@ -141,6 +147,41 @@ class CreateOrdenUseCase extends IUseCase {
         // Validar que tenga producto o datos de producto
         if (!data.id_producto && !data.producto) {
             throw new Error('Debe proporcionar id_producto o datos del producto');
+        }
+    }
+
+    /**
+     * Envía notificación de WhatsApp al cliente cuando se crea una orden
+     * Este método es asíncrono y no bloquea el flujo principal
+     */
+    async enviarNotificacionOrdenCreada(orden, clienteId) {
+        try {
+            // Obtener datos del cliente
+            const cliente = await this.clienteRepository.findById(clienteId);
+
+            if (!cliente) {
+                console.log('Cliente no encontrado para notificación WhatsApp');
+                return;
+            }
+
+            // Enviar notificación usando el template orden_creada
+            const resultado = await WhatsAppService.sendTemplate(
+                cliente.telefono_contacto,
+                'orden_creada',
+                [
+                    { type: 'text', parameterName: 'cliente_nombre', text: cliente.nombre_completo },
+                    { type: 'text', parameterName: 'orden_numero', text: `#${orden.id_orden}` }
+                ]
+            );
+
+            if (resultado.sent) {
+                console.log(`✅ Notificación de orden creada enviada a ${cliente.nombre_completo} (${cliente.telefono_contacto})`);
+            } else {
+                console.log(`⚠️ No se envió notificación de orden creada: ${resultado.reason || resultado.error}`);
+            }
+        } catch (error) {
+            // No lanzar error para no afectar el flujo principal
+            console.error('Error en enviarNotificacionOrdenCreada:', error.message);
         }
     }
 }
