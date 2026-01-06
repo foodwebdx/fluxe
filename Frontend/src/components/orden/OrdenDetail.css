@@ -681,3 +681,126 @@
         padding: 1.5rem;
     }
 }
+
+/* Sección de información del producto */
+.product-info-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.product-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.product-info-header:hover {
+    background: #f8fafc;
+}
+
+.product-info-header h2 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 1.5rem;
+}
+
+.expand-button {
+    background: #f0f4ff;
+    border: none;
+    color: #667eea;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+}
+
+.expand-button:hover {
+    background: #e0e7ff;
+    transform: scale(1.05);
+}
+
+.product-info-content {
+    padding: 2rem;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.product-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.product-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.product-info-item.product-info-image {
+    grid-column: 1 / -1;
+    align-items: flex-start;
+}
+
+.product-info-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.product-info-value {
+    font-size: 1rem;
+    color: #1e293b;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 6px;
+    border-left: 3px solid #667eea;
+}
+
+.product-image {
+    max-width: 300px;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    margin-top: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .product-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .product-info-header {
+        padding: 1rem 1.5rem;
+    }
+
+    .product-info-content {
+        padding: 1.5rem;
+    }
+}

@@ -25,16 +25,22 @@ class OrdenRepository extends IOrdenRepository {
                     correo_electronico: true,
                     telefono_contacto: true,
                     numero_identificacion: true,
-                    tipo_identificacion: true
+                    tipo_identificacion: true,
+                    tipo_direccion: true,
+                    direccion: true,
+                    notas_cliente: true
                 }
             },
             productos: {
                 select: {
                     id_producto: true,
                     nombre_producto: true,
+                    identificador_interno: true,
                     modelo: true,
                     numero_serie: true,
-                    descripcion: true
+                    descripcion: true,
+                    identificador_unico_adicional: true,
+                    notas_producto: true
                 }
             },
             flujos: {
@@ -211,6 +217,24 @@ class OrdenRepository extends IOrdenRepository {
                 return null;
             }
             console.error('Error en cambiarEstado:', error);
+            throw error;
+        }
+    }
+
+    async updateFechaEntrega(idOrden, nuevaFecha) {
+        try {
+            const ordenActualizada = await this.getPrisma().ordenes.update({
+                where: { id_orden: parseInt(idOrden) },
+                data: { fecha_estimada_entrega: new Date(nuevaFecha) },
+                include: this.getIncludeRelations()
+            });
+
+            return new Orden(ordenActualizada);
+        } catch (error) {
+            if (error.code === 'P2025') {
+                return null;
+            }
+            console.error('Error en updateFechaEntrega:', error);
             throw error;
         }
     }
