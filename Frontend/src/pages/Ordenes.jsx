@@ -446,6 +446,25 @@ const Ordenes = ({ onVerOrden }) => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!confirm('¿Está seguro de eliminar esta orden? Esta acción no se puede deshacer.')) return;
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/ordenes/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Error al eliminar la orden');
+      }
+
+      await fetchOrdenes();
+    } catch (err) {
+      console.error('Error:', err);
+      alert(err.message);
+    }
+  };
 
   // Filtrar órdenes según los filtros aplicados
   const ordenesFiltradas = ordenes.filter(orden => {
@@ -802,6 +821,7 @@ const Ordenes = ({ onVerOrden }) => {
                       <td>{formatDate(orden.fecha_creacion)}</td>
                       <td>
                         <button className="btn-sm btn-primary" onClick={() => onVerOrden && onVerOrden(orden.id_orden)}>Ver</button>
+                        <button className="btn-sm btn-danger" onClick={() => handleDelete(orden.id_orden)}>Eliminar</button>
                       </td>
                     </tr>
                   ))

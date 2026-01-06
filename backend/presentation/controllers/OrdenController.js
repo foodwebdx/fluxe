@@ -3,6 +3,7 @@ const GetOrdenByIdUseCase = require('../../application/usecases/orden/GetOrdenBy
 const CreateOrdenUseCase = require('../../application/usecases/orden/CreateOrdenUseCase');
 const UpdateOrdenUseCase = require('../../application/usecases/orden/UpdateOrdenUseCase');
 const CambiarEstadoOrdenUseCase = require('../../application/usecases/orden/CambiarEstadoOrdenUseCase');
+const DeleteOrdenUseCase = require('../../application/usecases/orden/DeleteOrdenUseCase');
 const OrdenRepository = require('../../infrastructure/repositories/OrdenRepository');
 
 class OrdenController {
@@ -12,6 +13,7 @@ class OrdenController {
         this.createOrdenUseCase = new CreateOrdenUseCase();
         this.updateOrdenUseCase = new UpdateOrdenUseCase();
         this.cambiarEstadoUseCase = new CambiarEstadoOrdenUseCase();
+        this.deleteOrdenUseCase = new DeleteOrdenUseCase();
         this.ordenRepository = new OrdenRepository();
     }
 
@@ -158,6 +160,24 @@ class OrdenController {
             return res.status(statusCode).json({
                 success: false,
                 message: error.message || 'Error al cambiar el estado de la orden',
+            });
+        }
+    }
+
+    async delete(req, res) {
+        try {
+            const { id } = req.params;
+            const result = await this.deleteOrdenUseCase.execute(id);
+
+            return res.status(200).json({
+                success: true,
+                ...result,
+            });
+        } catch (error) {
+            const statusCode = error.message === 'Orden no encontrada' ? 404 : 500;
+            return res.status(statusCode).json({
+                success: false,
+                message: error.message || 'Error al eliminar la orden',
             });
         }
     }
