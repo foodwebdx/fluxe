@@ -494,6 +494,28 @@
   margin-top: 1rem;
 }
 
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.role-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.role-option input {
+  accent-color: #667eea;
+}
+
 .btn-cancel {
   padding: 0.75rem 1.5rem;
   background: #f1f5f9;

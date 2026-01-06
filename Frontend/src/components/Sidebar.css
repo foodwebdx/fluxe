@@ -64,3 +64,43 @@
 .nav-item .icon {
   font-size: 1.25rem;
 }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sidebar-user {
+  color: #e2e8f0;
+}
+
+.sidebar-user-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.sidebar-user-role {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+.logout-button {
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.logout-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
