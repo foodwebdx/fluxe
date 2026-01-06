@@ -8,6 +8,10 @@ const ordenRoutes = require('./orden.routes');
 const historialRoutes = require('./historial.routes');
 const comentarioRoutes = require('./comentario.routes');
 const evidenciaRoutes = require('./evidencia.routes');
+const usuarioRoutes = require('./usuario.routes');
+const rolRoutes = require('./rol.routes');
+const usuarioRolRoutes = require('./usuarioRol.routes');
+const authRoutes = require('./auth.routes');
 
 const router = express.Router();
 
@@ -108,6 +112,49 @@ router.get('/', (req, res) => {
           'DELETE /api/evidencias/:id - Eliminar evidencia'
         ]
       },
+      usuarios: {
+        path: '/api/usuarios',
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        description: 'Gestión de usuarios',
+        endpoints: [
+          'GET /api/usuarios - Listar todos',
+          'GET /api/usuarios/:id - Obtener por ID',
+          'POST /api/usuarios - Crear',
+          'PUT /api/usuarios/:id - Actualizar',
+          'DELETE /api/usuarios/:id - Eliminar'
+        ]
+      },
+      roles: {
+        path: '/api/roles',
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        description: 'Gestión de roles',
+        endpoints: [
+          'GET /api/roles - Listar todos',
+          'GET /api/roles/:id - Obtener por ID',
+          'POST /api/roles - Crear',
+          'PUT /api/roles/:id - Actualizar',
+          'DELETE /api/roles/:id - Eliminar'
+        ]
+      },
+      usuarios_roles: {
+        path: '/api/usuarios-roles',
+        methods: ['GET', 'POST', 'DELETE'],
+        description: 'Asignación de roles a usuarios',
+        endpoints: [
+          'GET /api/usuarios-roles - Listar relaciones',
+          'GET /api/usuarios-roles/usuario/:idUsuario - Roles por usuario',
+          'POST /api/usuarios-roles - Asignar rol',
+          'DELETE /api/usuarios-roles/:idUsuario/:idRol - Remover rol'
+        ]
+      },
+      auth: {
+        path: '/api/auth',
+        methods: ['POST'],
+        description: 'Autenticacion (login sin encriptacion)',
+        endpoints: [
+          'POST /api/auth/login - Iniciar sesion'
+        ]
+      },
     },
     timestamp: new Date().toISOString(),
   });
@@ -122,6 +169,9 @@ router.use('/ordenes', ordenRoutes);
 router.use('/historial', historialRoutes);
 router.use('/comentarios', comentarioRoutes);
 router.use('/evidencias', evidenciaRoutes);
+router.use('/usuarios', usuarioRoutes);
+router.use('/roles', rolRoutes);
+router.use('/usuarios-roles', usuarioRolRoutes);
+router.use('/auth', authRoutes);
 
 module.exports = router;
-
