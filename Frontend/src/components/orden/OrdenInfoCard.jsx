@@ -1,4 +1,10 @@
-const OrdenInfoCard = ({ orden, isInFinalState }) => {
+import { useState } from 'react';
+
+const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange }) => {
+    const [editingFecha, setEditingFecha] = useState(false);
+    const [nuevaFecha, setNuevaFecha] = useState('');
+    const [loading, setLoading] = useState(false);
+
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
         const date = new Date(dateString);
@@ -7,6 +13,66 @@ const OrdenInfoCard = ({ orden, isInFinalState }) => {
             month: 'long',
             day: 'numeric'
         });
+    };
+
+    const formatDateInput = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0];
+    };
+
+    const handleEditFecha = () => {
+        setNuevaFecha(formatDateInput(orden.fecha_estimada_entrega));
+        setEditingFecha(true);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingFecha(false);
+        setNuevaFecha('');
+    };
+
+    const handleSaveFecha = async () => {
+        if (!nuevaFecha) {
+            alert('Por favor selecciona una fecha');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const response = await fetch(`http://localhost:3000/api/ordenes/${orden.id_orden}/fecha-entrega`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fecha_estimada_entrega: nuevaFecha
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Error al actualizar la fecha');
+            }
+
+            alert(data.whatsapp?.sent 
+                ? 'Fecha actualizada y notificación enviada por WhatsApp ✅' 
+                : 'Fecha actualizada correctamente'
+            );
+            
+            setEditingFecha(false);
+            setNuevaFecha('');
+            
+            // Llamar al callback para recargar los datos
+            if (onFechaEntregaChange) {
+                onFechaEntregaChange();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`Error: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -92,12 +158,51 @@ const OrdenInfoCard = ({ orden, isInFinalState }) => {
                 </div>
 
                 {/* Fecha Estimada de Entrega */}
-                {orden.fecha_estimada_entrega && (
-                    <div className="info-section">
-                        <div className="info-label">🎯 Fecha Estimada de Entrega</div>
-                        <div className="info-value">{formatDate(orden.fecha_estimada_entrega)}</div>
+                <div className="info-section">
+                    <div className="info-label">
+                        🎯 Fecha Estimada de Entrega
+                        {!editingFecha && !isInFinalState && (
+                            <button 
+                                onClick={handleEditFecha}
+                                className="btn-icon"
+                                style={{ marginLeft: '0.5rem', fontSize: '0.875rem' }}
+                                title="Editar fecha de entrega"
+                            >
+                                ✏️
+                            </button>
+                        )}
                     </div>
-                )}
+                    {editingFecha ? (
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.5rem' }}>
+                            <input
+                                type="date"
+                                value={nuevaFecha}
+                                onChange={(e) => setNuevaFecha(e.target.value)}
+                                className="comentario-input"
+                                style={{ flex: 1 }}
+                                disabled={loading}
+                            />
+                            <button 
+                                onClick={handleSaveFecha}
+                                className="btn-sm btn-primary"
+                                disabled={loading}
+                            >
+                                {loading ? '⏳' : '💾'}
+                            </button>
+                            <button 
+                                onClick={handleCancelEdit}
+                                className="btn-sm btn-secondary"
+                                disabled={loading}
+                            >
+                                ✖️
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="info-value">
+                            {orden.fecha_estimada_entrega ? formatDate(orden.fecha_estimada_entrega) : 'No establecida'}
+                        </div>
+                    )}
+                </div>
 
                 {/* Fecha de Cierre - Solo mostrar si está en el último estado */}
                 {orden.fecha_cierre && isInFinalState && (

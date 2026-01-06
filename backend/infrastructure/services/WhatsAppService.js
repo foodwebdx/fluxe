@@ -145,6 +145,105 @@ class WhatsAppService {
     }
 
     /**
+     * Envía una notificación de cambio de fecha de entrega
+     * @param {Object} cliente - Datos del cliente
+     * @param {Object} orden - Datos de la orden
+     * @param {Date} nuevaFecha - Nueva fecha de entrega
+     * @returns {Promise<Object>} - Resultado del envío
+     */
+    async notifyDeliveryDateChange(cliente, orden, nuevaFecha) {
+        if (!this.isConfigured()) {
+            console.log('WhatsApp notifications disabled or not configured');
+            return { sent: false, reason: 'service_disabled' };
+        }
+
+        if (!cliente.telefono_contacto) {
+            console.log('Cliente sin teléfono de contacto');
+            return { sent: false, reason: 'no_phone_number' };
+        }
+
+        try {
+            const phoneNumber = this.formatPhoneNumber(cliente.telefono_contacto);
+            
+            // Formatear fecha en español
+            const fechaFormateada = new Date(nuevaFecha).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+
+            // Obtener nombre del producto
+            const nombreProducto = orden.producto?.nombre_producto || 
+                                  orden.productos?.nombre_producto || 
+                                  'tu producto';
+
+            // Intentar enviar con template primero
+            try {
+                const response = await this.client.messages.sendTemplate({
+                    phoneNumberId: this.phoneNumberId,
+                    to: phoneNumber,
+                    template: {
+                        name: 'cambio_fecha_entrega',
+                        language: { code: 'es_MX' },
+                        components: [
+                            {
+                                type: 'body',
+                                parameters: [
+                                    {
+                                        type: 'text',
+                                        parameterName: 'cliente_nombre',
+                                        text: cliente.nombre_completo
+                                    },
+                                    {
+                                        type: 'text',
+                                        parameterName: 'producto_nombre',
+                                        text: nombreProducto
+                                    },
+                                    {
+                                        type: 'text',
+                                        parameterName: 'fecha_entrega',
+                                        text: fechaFormateada
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                });
+
+                console.log('WhatsApp delivery date notification sent successfully:', {
+                    to: phoneNumber,
+                    orden: orden.id_orden,
+                    fecha: fechaFormateada
+                });
+
+                return {
+                    sent: true,
+                    timestamp: new Date(),
+                    messageId: response?.messages?.[0]?.id
+                };
+            } catch (templateError) {
+                // Si el template no existe, enviar mensaje de texto
+                console.log('Template not found, sending text message instead');
+                
+                const mensaje = `Hola ${cliente.nombre_completo},\n\n` +
+                    `Te informamos que la fecha estimada de entrega de ${nombreProducto} ` +
+                    `ha sido actualizada.\n\n` +
+                    `📅 Nueva fecha de entrega: ${fechaFormateada}\n\n` +
+                    `Gracias por tu confianza.`;
+
+                return await this.sendTextMessage(phoneNumber, mensaje);
+            }
+        } catch (error) {
+            console.error('Error sending WhatsApp delivery date notification:', error);
+            return {
+                sent: false,
+                error: error.message,
+                timestamp: new Date()
+            };
+        }
+    }
+
+    /**
      * Envía un mensaje de texto simple (sin template)
      * @param {string} to - Número de teléfono destino
      * @param {string} body - Texto del mensaje

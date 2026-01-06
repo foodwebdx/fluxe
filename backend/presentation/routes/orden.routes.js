@@ -27,6 +27,9 @@ router.put('/:id', (req, res) => ordenController.update(req, res));
 // PUT /api/ordenes/:id/estado - Cambiar estado de una orden
 router.put('/:id/estado', (req, res) => ordenController.cambiarEstado(req, res));
 
+// PUT /api/ordenes/:id/fecha-entrega - Actualizar fecha de entrega
+router.put('/:id/fecha-entrega', (req, res) => ordenController.updateFechaEntrega(req, res));
+
 // DELETE /api/ordenes/:id - Eliminar una orden
 router.delete('/:id', (req, res) => ordenController.delete(req, res));
 

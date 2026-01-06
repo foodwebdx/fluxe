@@ -181,6 +181,63 @@ class OrdenController {
             });
         }
     }
+
+    async updateFechaEntrega(req, res) {
+        try {
+            const { id } = req.params;
+            const { fecha_estimada_entrega } = req.body;
+
+            if (!fecha_estimada_entrega) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'La fecha de entrega es requerida',
+                });
+            }
+
+            // Actualizar la fecha en la base de datos
+            const ordenActualizada = await this.ordenRepository.updateFechaEntrega(id, fecha_estimada_entrega);
+
+            if (!ordenActualizada) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Orden no encontrada',
+                });
+            }
+
+            // Obtener datos del cliente (puede estar en clientes o cliente)
+            const clienteData = ordenActualizada.clientes || ordenActualizada.cliente;
+            
+            if (!clienteData) {
+                console.error('Cliente no encontrado en la orden:', ordenActualizada);
+                return res.status(400).json({
+                    success: false,
+                    message: 'Fecha actualizada, pero no se pudo enviar notificación (cliente no encontrado)',
+                    data: ordenActualizada
+                });
+            }
+
+            // Enviar notificación por WhatsApp
+            const whatsAppService = require('../../infrastructure/services/WhatsAppService').default;
+            const notificationResult = await whatsAppService.notifyDeliveryDateChange(
+                clienteData,
+                ordenActualizada,
+                fecha_estimada_entrega
+            );
+
+            return res.status(200).json({
+                success: true,
+                message: 'Fecha de entrega actualizada exitosamente',
+                data: ordenActualizada,
+                whatsapp: notificationResult
+            });
+        } catch (error) {
+            console.error('Error en updateFechaEntrega:', error);
+            return res.status(500).json({
+                success: false,
+                message: error.message || 'Error al actualizar la fecha de entrega',
+            });
+        }
+    }
 }
 
 module.exports = OrdenController;

@@ -10,6 +10,8 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
     const [evidencias, setEvidencias] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isClientInfoExpanded, setIsClientInfoExpanded] = useState(false);
+    const [isProductInfoExpanded, setIsProductInfoExpanded] = useState(false);
 
     useEffect(() => {
         if (ordenId) {
@@ -136,8 +138,126 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
 
             {/* Información de la orden */}
             <div className="orden-detail-grid">
-                <OrdenInfoCard orden={orden} isInFinalState={isInFinalState} />
+                <OrdenInfoCard 
+                    orden={orden} 
+                    isInFinalState={isInFinalState}
+                    onFechaEntregaChange={loadAllData}
+                />
             </div>
+
+            {/* Información del Cliente */}
+            {(orden.clientes || orden.cliente) && (
+                <div className="product-info-section">
+                    <div className="product-info-header" onClick={() => setIsClientInfoExpanded(!isClientInfoExpanded)}>
+                        <h2>👤 Información del Cliente</h2>
+                        <button className="expand-button">
+                            {isClientInfoExpanded ? '▼' : '▶'}
+                        </button>
+                    </div>
+                    {isClientInfoExpanded && (
+                        <div className="product-info-content">
+                            <div className="product-info-grid">
+                                <div className="product-info-item">
+                                    <span className="product-info-label">Nombre Completo:</span>
+                                    <span className="product-info-value">{(orden.clientes || orden.cliente).nombre_completo}</span>
+                                </div>
+                                <div className="product-info-item">
+                                    <span className="product-info-label">Tipo de Identificación:</span>
+                                    <span className="product-info-value">{(orden.clientes || orden.cliente).tipo_identificacion}</span>
+                                </div>
+                                <div className="product-info-item">
+                                    <span className="product-info-label">Número de Identificación:</span>
+                                    <span className="product-info-value">{(orden.clientes || orden.cliente).numero_identificacion}</span>
+                                </div>
+                                <div className="product-info-item">
+                                    <span className="product-info-label">Teléfono de Contacto:</span>
+                                    <span className="product-info-value">{(orden.clientes || orden.cliente).telefono_contacto}</span>
+                                </div>
+                                <div className="product-info-item">
+                                    <span className="product-info-label">Correo Electrónico:</span>
+                                    <span className="product-info-value">{(orden.clientes || orden.cliente).correo_electronico}</span>
+                                </div>
+                                {(orden.clientes || orden.cliente).tipo_direccion && (
+                                    <div className="product-info-item">
+                                        <span className="product-info-label">Tipo de Dirección:</span>
+                                        <span className="product-info-value">{(orden.clientes || orden.cliente).tipo_direccion}</span>
+                                    </div>
+                                )}
+                                {(orden.clientes || orden.cliente).direccion && (
+                                    <div className="product-info-item">
+                                        <span className="product-info-label">Dirección:</span>
+                                        <span className="product-info-value">{(orden.clientes || orden.cliente).direccion}</span>
+                                    </div>
+                                )}
+                                {(orden.clientes || orden.cliente).notas_cliente && (
+                                    <div className="product-info-item">
+                                        <span className="product-info-label">Notas:</span>
+                                        <span className="product-info-value">{(orden.clientes || orden.cliente).notas_cliente}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Información del Producto */}
+            {(orden.producto || orden.productos) && (
+                <div className="product-info-section">
+                    <div className="product-info-header" onClick={() => setIsProductInfoExpanded(!isProductInfoExpanded)}>
+                        <h2>📦 Información del Producto</h2>
+                        <button className="expand-button">
+                            {isProductInfoExpanded ? '▼' : '▶'}
+                        </button>
+                    </div>
+                    {isProductInfoExpanded && (
+                        <div className="product-info-content">
+                            <div className="product-info-grid">
+                                <div className="product-info-item">
+                                    <span className="product-info-label">Nombre:</span>
+                                    <span className="product-info-value">{(orden.producto || orden.productos).nombre_producto}</span>
+                                </div>
+                                {(orden.producto || orden.productos).identificador_interno && (
+                                    <div className="product-info-item">
+                                        <span className="product-info-label">Identificador Interno:</span>
+                                        <span className="product-info-value">{(orden.producto || orden.productos).identificador_interno}</span>
+                                    </div>
+                                )}
+                                {(orden.producto || orden.productos).descripcion && (
+                                    <div className="product-info-item">
+                                        <span className="product-info-label">Descripción:</span>
+                                        <span className="product-info-value">{(orden.producto || orden.productos).descripcion}</span>
+                                    </div>
+                                )}
+                                {(orden.producto || orden.productos).modelo && (
+                                    <div className="product-info-item">
+                                        <span className="product-info-label">Modelo:</span>
+                                        <span className="product-info-value">{(orden.producto || orden.productos).modelo}</span>
+                                    </div>
+                                )}
+                                {(orden.producto || orden.productos).numero_serie && (
+                                    <div className="product-info-item">
+                                        <span className="product-info-label">Número de Serie:</span>
+                                        <span className="product-info-value">{(orden.producto || orden.productos).numero_serie}</span>
+                                    </div>
+                                )}
+                                {(orden.producto || orden.productos).identificador_unico_adicional && (
+                                    <div className="product-info-item">
+                                        <span className="product-info-label">Identificador Único Adicional:</span>
+                                        <span className="product-info-value">{(orden.producto || orden.productos).identificador_unico_adicional}</span>
+                                    </div>
+                                )}
+                                {(orden.producto || orden.productos).notas_producto && (
+                                    <div className="product-info-item">
+                                        <span className="product-info-label">Notas:</span>
+                                        <span className="product-info-value">{(orden.producto || orden.productos).notas_producto}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Línea de tiempo de estados */}
             <EstadosTimeline
