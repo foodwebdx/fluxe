@@ -8,7 +8,8 @@ const EvidenciasSection = ({
     estadoId,
     evidencias,
     onRefresh,
-    readOnly = false
+    readOnly = false,
+    showVisibilityToggle = true
 }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [preview, setPreview] = useState(null);
@@ -257,12 +258,14 @@ const EvidenciasSection = ({
                                 >
                                     ⬇️
                                 </button>
-                                <VisibilityToggle
-                                    isPublic={getIsPublic(evidencia)}
-                                    onToggle={() => handleToggleVisibility(evidencia)}
-                                    disabled={uploading || togglingId === evidencia.id_evidencia}
-                                    title={getIsPublic(evidencia) ? 'Visible para cliente' : 'Oculto para cliente'}
-                                />
+                                {showVisibilityToggle && (
+                                    <VisibilityToggle
+                                        isPublic={getIsPublic(evidencia)}
+                                        onToggle={() => handleToggleVisibility(evidencia)}
+                                        disabled={uploading || togglingId === evidencia.id_evidencia}
+                                        title={getIsPublic(evidencia) ? 'Visible para cliente' : 'Oculto para cliente'}
+                                    />
+                                )}
                                 {!readOnly && (
                                     <button
                                         type="button"

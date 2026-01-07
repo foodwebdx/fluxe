@@ -7,7 +7,8 @@ const ComentariosSection = ({
     historialId,
     comentarios,
     onRefresh,
-    readOnly = false
+    readOnly = false,
+    showVisibilityToggle = true
 }) => {
     const [nuevoComentario, setNuevoComentario] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -200,6 +201,8 @@ const ComentariosSection = ({
         }
     };
 
+    const shouldShowActions = showVisibilityToggle || !readOnly;
+
     return (
         <div className="comentarios-section">
             <h4>💬 Comentarios</h4>
@@ -254,36 +257,40 @@ const ComentariosSection = ({
                                     <div className="comentario-texto">
                                         {comentario.texto_comentario}
                                     </div>
-                                    <div className="comentario-actions">
-                                        <VisibilityToggle
-                                            isPublic={getIsPublic(comentario)}
-                                            onToggle={() => handleToggleVisibility(comentario)}
-                                            disabled={submitting}
-                                            title={getIsPublic(comentario) ? 'Visible para cliente' : 'Oculto para cliente'}
-                                        />
-                                        {!readOnly && (
-                                            <>
-                                                <button
-                                                    type="button"
-                                                    className="btn-icon"
-                                                    onClick={() => handleEditComentario(comentario)}
-                                                    title="Editar comentario"
+                                    {shouldShowActions && (
+                                        <div className="comentario-actions">
+                                            {showVisibilityToggle && (
+                                                <VisibilityToggle
+                                                    isPublic={getIsPublic(comentario)}
+                                                    onToggle={() => handleToggleVisibility(comentario)}
                                                     disabled={submitting}
-                                                >
-                                                    ✏️
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="btn-icon btn-danger"
-                                                    onClick={() => handleDeleteComentario(comentario.id_comentario)}
-                                                    title="Eliminar comentario"
-                                                    disabled={submitting}
-                                                >
-                                                    🗑️
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
+                                                    title={getIsPublic(comentario) ? 'Visible para cliente' : 'Oculto para cliente'}
+                                                />
+                                            )}
+                                            {!readOnly && (
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        className="btn-icon"
+                                                        onClick={() => handleEditComentario(comentario)}
+                                                        title="Editar comentario"
+                                                        disabled={submitting}
+                                                    >
+                                                        ✏️
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn-icon btn-danger"
+                                                        onClick={() => handleDeleteComentario(comentario.id_comentario)}
+                                                        title="Eliminar comentario"
+                                                        disabled={submitting}
+                                                    >
+                                                        🗑️
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </div>

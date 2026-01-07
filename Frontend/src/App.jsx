@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Ordenes from './pages/Ordenes';
 import OrdenDetail from './pages/OrdenDetail';
+import OrdenLookup from './pages/OrdenLookup';
 import Clientes from './pages/Clientes';
 import Productos from './pages/Productos';
 import Flujos from './pages/Flujos';
@@ -12,6 +13,7 @@ import Usuarios from './pages/Usuarios';
 import './App.css';
 
 const AUTH_STORAGE_KEY = 'fluxe_auth';
+const PUBLIC_ORDER_PATH = '/consulta-orden';
 
 function App() {
   const [activeView, setActiveView] = useState('dashboard');
@@ -58,14 +60,15 @@ function App() {
     'dashboard',
     'ordenes',
     'orden-detail',
+    'consulta-orden',
     'clientes',
     'productos',
     'flujos',
     'estados',
     'usuarios',
   ];
-  const staffViews = ['ordenes', 'orden-detail', 'clientes', 'productos'];
-  const defaultViews = ['ordenes', 'orden-detail'];
+  const staffViews = ['ordenes', 'orden-detail', 'consulta-orden', 'clientes', 'productos'];
+  const defaultViews = ['ordenes', 'orden-detail', 'consulta-orden'];
   const allowedViews =
     hasOwnerRole || hasAdminRole
       ? allViews
@@ -73,6 +76,14 @@ function App() {
         ? staffViews
         : defaultViews;
   const isAuthenticated = Boolean(auth?.user);
+  const isPublicOrdenPath = (() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    const normalizedPath = window.location.pathname.replace(/\/$/, '');
+    const normalizedHash = window.location.hash.replace(/^#/, '').replace(/\/$/, '');
+    return normalizedPath === PUBLIC_ORDER_PATH || normalizedHash === PUBLIC_ORDER_PATH;
+  })();
 
   const handleSetActiveView = (view) => {
     if (!allowedViews.includes(view)) {
@@ -114,6 +125,14 @@ function App() {
     }
   }, [activeView, allowedViews, isAuthenticated]);
 
+  if (isPublicOrdenPath) {
+    return (
+      <div className="public-app">
+        <OrdenLookup isPublic={true} />
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     return <Login onLogin={handleLogin} />;
   }
@@ -136,6 +155,7 @@ function App() {
             onVolver={handleVolverOrdenes}
           />
         )}
+        {activeView === 'consulta-orden' && <OrdenLookup isPublic={false} />}
         {activeView === 'clientes' && <Clientes />}
         {activeView === 'productos' && <Productos />}
         {activeView === 'flujos' && <Flujos />}

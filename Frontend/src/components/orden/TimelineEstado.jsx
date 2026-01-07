@@ -9,7 +9,9 @@ const TimelineEstado = ({
     onClick,
     onAvanzar,
     onRetroceder,
-    onRefresh
+    onRefresh,
+    readOnly = false,
+    showVisibilityToggle = true
 }) => {
     const formatDate = (dateString) => {
         if (!dateString) return '--';
@@ -46,14 +48,14 @@ const TimelineEstado = ({
             </div>
 
             {/* Botón retroceder para el último estado previo */}
-            {type === 'completed' && onRetroceder && (
+            {type === 'completed' && onRetroceder && !readOnly && (
                 <button className="btn-retroceder" onClick={onRetroceder}>
                     ← Retroceder
                 </button>
             )}
 
             {/* Botón avanzar para el siguiente estado futuro */}
-            {type === 'pending' && onAvanzar && (
+            {type === 'pending' && onAvanzar && !readOnly && (
                 <button className="btn-avanzar" onClick={onAvanzar}>
                     Avanzar →
                 </button>
@@ -66,7 +68,8 @@ const TimelineEstado = ({
                         historialId={estado.historial.id_historial}
                         comentarios={estado.historial.comentarios_estado || []}
                         onRefresh={onRefresh}
-                        readOnly={false}
+                        readOnly={readOnly}
+                        showVisibilityToggle={showVisibilityToggle}
                     />
 
                     <EvidenciasSection
@@ -74,7 +77,8 @@ const TimelineEstado = ({
                         estadoId={estado.id_estado}
                         evidencias={evidencias || []}
                         onRefresh={onRefresh}
-                        readOnly={false}
+                        readOnly={readOnly}
+                        showVisibilityToggle={showVisibilityToggle}
                     />
                 </div>
             )}
