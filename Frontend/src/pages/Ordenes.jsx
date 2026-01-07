@@ -325,10 +325,34 @@ const Ordenes = ({ onVerOrden }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => {
+      if (name !== 'id_cliente') {
+        return {
+          ...prev,
+          [name]: value
+        };
+      }
+
+      const next = {
+        ...prev,
+        id_cliente: value
+      };
+
+      if (!value) {
+        next.id_producto = '';
+        return next;
+      }
+
+      const productoSeleccionado = productos.find(
+        (producto) => String(producto.id_producto) === String(prev.id_producto)
+      );
+
+      if (productoSeleccionado && String(productoSeleccionado.id_cliente) !== String(value)) {
+        next.id_producto = '';
+      }
+
+      return next;
+    });
   };
 
   const handleFiltroChange = (e) => {
@@ -643,6 +667,12 @@ const Ordenes = ({ onVerOrden }) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('es-ES');
   };
+
+  const productosFiltrados = formData.id_cliente
+    ? productos.filter(
+      (producto) => String(producto.id_cliente) === String(formData.id_cliente)
+    )
+    : productos;
 
   if (loading) {
     return (
@@ -1032,7 +1062,7 @@ const Ordenes = ({ onVerOrden }) => {
                           disabled={modalMode === 'view'}
                         >
                           <option value="">Seleccione un producto</option>
-                          {productos.map(producto => (
+                          {productosFiltrados.map(producto => (
                             <option key={producto.id_producto} value={producto.id_producto}>
                               {producto.nombre_producto} {producto.modelo && `- ${producto.modelo}`}
                             </option>
