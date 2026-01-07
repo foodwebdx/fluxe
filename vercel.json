@@ -1,31 +1,14 @@
 {
     "version": 2,
     "name": "fluxe",
-    "builds": [
+    "buildCommand": "cd Frontend && npm install && npm run build",
+    "outputDirectory": "Frontend/dist",
+    "rewrites": [
         {
-            "src": "Frontend/package.json",
-            "use": "@vercel/static-build",
-            "config": {
-                "distDir": "dist"
-            }
+            "source": "/api/(.*)",
+            "destination": "/api/index.js"
         }
     ],
-    "routes": [
-        {
-            "src": "/api/(.*)",
-            "dest": "/api/index.js"
-        },
-        {
-            "handle": "filesystem"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "/Frontend/$1"
-        }
-    ],
-    "env": {
-        "NODE_ENV": "production"
-    },
     "functions": {
         "api/index.js": {
             "maxDuration": 10,
