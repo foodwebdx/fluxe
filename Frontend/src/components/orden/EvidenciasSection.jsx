@@ -75,7 +75,7 @@ const EvidenciasSection = ({
                 formData.append('comentario', comentario.trim());
             }
 
-            const response = await fetch('http://localhost:3000/api/evidencias', {
+            const response = await fetch(apiUrl('/api/evidencias'), {
                 method: 'POST',
                 body: formData // NO enviar Content-Type, el navegador lo configura automáticamente
             });
@@ -119,7 +119,7 @@ const EvidenciasSection = ({
         setUploading(true);
 
         try {
-            const response = await fetch(`http://localhost:3000/api/evidencias/${id}`, {
+            const response = await fetch(apiUrl(`/api/evidencias/${id}`), {
                 method: 'DELETE'
             });
 

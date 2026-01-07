@@ -77,7 +77,7 @@ const EstadosTimeline = ({
         }
 
         try {
-            const response = await fetch(`http://localhost:3000/api/ordenes/${ordenId}/estado`, {
+            const response = await fetch(apiUrl(`/api/ordenes/${ordenId}/estado`), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ const EstadosTimeline = ({
         }
 
         try {
-            const response = await fetch(`http://localhost:3000/api/ordenes/${ordenId}/estado`, {
+            const response = await fetch(apiUrl(`/api/ordenes/${ordenId}/estado`), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

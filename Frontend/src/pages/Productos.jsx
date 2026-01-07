@@ -139,7 +139,7 @@ const Productos = () => {
       };
 
       if (modalMode === 'edit') {
-        response = await fetch(`http://localhost:3000/api/productos/${selectedProducto.id_producto}`, {
+        response = await fetch(apiUrl(`/api/productos/${selectedProducto.id_producto}`), {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -147,7 +147,7 @@ const Productos = () => {
           body: JSON.stringify(payload)
         });
       } else {
-        response = await fetch('http://localhost:3000/api/productos', {
+        response = await fetch(apiUrl('/api/productos'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -176,7 +176,7 @@ const Productos = () => {
     if (!confirm('¿Está seguro de eliminar este producto?')) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/productos/${id}`, {
+      const response = await fetch(apiUrl(`/api/productos/${id}`), {
         method: 'DELETE'
       });
 
