@@ -4,6 +4,7 @@ const FlujoRepository = require('../../../infrastructure/repositories/FlujoRepos
 const HistorialEstadoRepository = require('../../../infrastructure/repositories/HistorialEstadoRepository');
 const ClienteRepository = require('../../../infrastructure/repositories/ClienteRepository');
 const WhatsAppService = require('../../../infrastructure/services/WhatsAppService').default;
+const EmailService = require('../../../infrastructure/services/EmailService');
 
 class CambiarEstadoOrdenUseCase extends IUseCase {
     constructor() {
@@ -90,9 +91,9 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
             // 10. Obtener orden actualizada
             const ordenActualizada = await this.ordenRepository.findById(idOrden);
 
-            // 11. Enviar notificación de WhatsApp (sin bloquear el flujo)
-            this.enviarNotificacionWhatsApp(ordenActualizada, nuevoEstado, esUltimoEstado).catch(error => {
-                console.error('Error enviando notificación WhatsApp (no crítico):', error);
+            // 11. Enviar notificaciones (sin bloquear el flujo)
+            this.enviarNotificacionesCliente(ordenActualizada, nuevoEstado, esUltimoEstado).catch(error => {
+                console.error('Error enviando notificaciones (no crítico):', error);
             });
 
             return {
@@ -116,10 +117,10 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
     }
 
     /**
-     * Envía notificación de WhatsApp al cliente sobre el cambio de estado
+     * Envía notificaciones al cliente sobre el cambio de estado
      * Este método es asíncrono y no bloquea el flujo principal
      */
-    async enviarNotificacionWhatsApp(orden, nuevoEstado, esUltimoEstado = false) {
+    async enviarNotificacionesCliente(orden, nuevoEstado, esUltimoEstado = false) {
         try {
             // Obtener datos del cliente
             const cliente = await this.clienteRepository.findById(orden.id_cliente);
@@ -133,12 +134,32 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
 
             // Si es el último estado, usar notificación de orden completada
             if (esUltimoEstado) {
-                resultado = await WhatsAppService.notifyOrderCompleted(cliente, orden);
+                const mensaje = `¡Excelente noticia ${cliente.nombre_completo}!\n\n` +
+                    `Tu orden #${orden.id_orden} ha sido completada.\n\n` +
+                    'Gracias por confiar en nosotros.';
+                const asunto = `Orden #${orden.id_orden} completada`;
 
-                if (resultado.sent) {
+                const [resultadoWhatsApp, resultadoEmail] = await Promise.all([
+                    WhatsAppService.notifyOrderCompleted(cliente, orden),
+                    EmailService.sendEmail({
+                        to: cliente.correo_electronico,
+                        subject: asunto,
+                        text: mensaje
+                    })
+                ]);
+
+                resultado = resultadoWhatsApp;
+
+                if (resultadoWhatsApp.sent) {
                     console.log(`✅ Notificación de orden completada enviada a ${cliente.nombre_completo} (${cliente.telefono_contacto})`);
                 } else {
-                    console.log(`⚠️ No se envió notificación de orden completada: ${resultado.reason || resultado.error}`);
+                    console.log(`⚠️ No se envió notificación de orden completada: ${resultadoWhatsApp.reason || resultadoWhatsApp.error}`);
+                }
+
+                if (resultadoEmail.sent) {
+                    console.log(`✅ Correo de orden completada enviado a ${cliente.nombre_completo} (${cliente.correo_electronico})`);
+                } else {
+                    console.log(`⚠️ No se envió correo de orden completada: ${resultadoEmail.reason || resultadoEmail.error}`);
                 }
             } else {
                 // Para cambios de estado normales, usar template de cambio de estado
@@ -156,7 +177,7 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
             }
         } catch (error) {
             // No lanzar error para no afectar el flujo principal
-            console.error('Error en enviarNotificacionWhatsApp:', error.message);
+            console.error('Error en enviarNotificacionesCliente:', error.message);
         }
     }
 }
