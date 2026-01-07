@@ -61,6 +61,20 @@ class PrismaService {
 
     getClient() {
         if (!this.prisma) {
+            // En serverless, conectar automáticamente si no está conectado
+            if (process.env.NODE_ENV === 'production') {
+                console.log('⚡ Conectando Prisma automáticamente en serverless...');
+                // Crear conexión síncrona para serverless
+                this.pool = new Pool({
+                    connectionString: process.env.DATABASE_URL,
+                });
+                const adapter = new PrismaPg(this.pool);
+                this.prisma = new PrismaClient({
+                    adapter,
+                    log: ['error'],
+                });
+                return this.prisma;
+            }
             throw new Error('Prisma no está conectado. Asegúrate de llamar a connect() primero.');
         }
         return this.prisma;
