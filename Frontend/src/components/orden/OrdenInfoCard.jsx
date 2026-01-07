@@ -17,10 +17,21 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
         });
     };
 
+    const formatDateOnly = (dateString) => {
+        if (!dateString) return 'N/A';
+        const [year, month, day] = dateString.split('T')[0].split('-');
+        if (!year || !month || !day) return 'N/A';
+        const date = new Date(Number(year), Number(month) - 1, Number(day));
+        return date.toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
     const formatDateInput = (dateString) => {
         if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toISOString().split('T')[0];
+        return dateString.split('T')[0];
     };
 
     const handleEditFecha = () => {
@@ -203,7 +214,7 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
                         </div>
                     ) : (
                         <div className="info-value">
-                            {orden.fecha_estimada_entrega ? formatDate(orden.fecha_estimada_entrega) : 'No establecida'}
+                            {orden.fecha_estimada_entrega ? formatDateOnly(orden.fecha_estimada_entrega) : 'No establecida'}
                         </div>
                     )}
                 </div>
