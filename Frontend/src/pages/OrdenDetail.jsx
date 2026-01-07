@@ -28,7 +28,7 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
             setLoading(true);
             setError(null);
 
-            // 1. Cargar orden
+            // 1. Cargar ordenes
             const ordenRes = await fetch(apiUrl(`/api/ordenes/${ordenId}`));
             if (!ordenRes.ok) throw new Error('Error al cargar la orden');
             const ordenData = await ordenRes.json();
