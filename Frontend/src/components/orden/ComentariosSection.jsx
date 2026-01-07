@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiUrl } from '../../config/api';
+import VisibilityToggle from './VisibilityToggle';
 
 
 const ComentariosSection = ({
@@ -12,6 +13,11 @@ const ComentariosSection = ({
     const [submitting, setSubmitting] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [editingText, setEditingText] = useState('');
+    const [localComentarios, setLocalComentarios] = useState(comentarios || []);
+
+    useEffect(() => {
+        setLocalComentarios(comentarios || []);
+    }, [comentarios]);
 
     const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -147,14 +153,61 @@ const ComentariosSection = ({
         }
     };
 
+    const getIsPublic = (comentario) => Boolean(comentario.public ?? comentario.Public);
+
+    const updateLocalVisibility = (id, nextValue) => {
+        setLocalComentarios((prev) =>
+            prev.map((item) =>
+                item.id_comentario === id
+                    ? { ...item, public: nextValue, Public: nextValue }
+                    : item
+            )
+        );
+    };
+
+    const handleToggleVisibility = async (comentario) => {
+        const currentValue = getIsPublic(comentario);
+        const nextValue = !currentValue;
+
+        updateLocalVisibility(comentario.id_comentario, nextValue);
+        setSubmitting(true);
+
+        try {
+            const response = await fetch(apiUrl(`/api/comentarios/${comentario.id_comentario}`), {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    public: nextValue
+                })
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Error al actualizar visibilidad');
+            }
+
+            if (onRefresh) {
+                await onRefresh();
+            }
+        } catch (err) {
+            console.error('Error al actualizar visibilidad:', err);
+            updateLocalVisibility(comentario.id_comentario, currentValue);
+            alert('Error al actualizar visibilidad: ' + err.message);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     return (
         <div className="comentarios-section">
             <h4>💬 Comentarios</h4>
 
             {/* Lista de comentarios existentes */}
-            {comentarios && comentarios.length > 0 ? (
+            {localComentarios && localComentarios.length > 0 ? (
                 <div className="comentarios-list">
-                    {comentarios.map((comentario) => (
+                    {localComentarios.map((comentario) => (
                         <div key={comentario.id_comentario} className="comentario-item">
                             <div className="comentario-header">
                                 <span className="comentario-usuario">
@@ -201,28 +254,36 @@ const ComentariosSection = ({
                                     <div className="comentario-texto">
                                         {comentario.texto_comentario}
                                     </div>
-                                    {!readOnly && (
-                                        <div className="comentario-actions">
-                                            <button
-                                                type="button"
-                                                className="btn-icon"
-                                                onClick={() => handleEditComentario(comentario)}
-                                                title="Editar comentario"
-                                                disabled={submitting}
-                                            >
-                                                ✏️
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="btn-icon btn-danger"
-                                                onClick={() => handleDeleteComentario(comentario.id_comentario)}
-                                                title="Eliminar comentario"
-                                                disabled={submitting}
-                                            >
-                                                🗑️
-                                            </button>
-                                        </div>
-                                    )}
+                                    <div className="comentario-actions">
+                                        <VisibilityToggle
+                                            isPublic={getIsPublic(comentario)}
+                                            onToggle={() => handleToggleVisibility(comentario)}
+                                            disabled={submitting}
+                                            title={getIsPublic(comentario) ? 'Visible para cliente' : 'Oculto para cliente'}
+                                        />
+                                        {!readOnly && (
+                                            <>
+                                                <button
+                                                    type="button"
+                                                    className="btn-icon"
+                                                    onClick={() => handleEditComentario(comentario)}
+                                                    title="Editar comentario"
+                                                    disabled={submitting}
+                                                >
+                                                    ✏️
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn-icon btn-danger"
+                                                    onClick={() => handleDeleteComentario(comentario.id_comentario)}
+                                                    title="Eliminar comentario"
+                                                    disabled={submitting}
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
                                 </>
                             )}
                         </div>

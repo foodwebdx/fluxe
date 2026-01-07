@@ -237,6 +237,8 @@
     padding: 1rem;
     border-radius: 6px;
     border-left: 3px solid #667eea;
+    display: flex;
+    flex-direction: column;
 }
 
 .comentario-header {
@@ -307,8 +309,10 @@
     border-radius: 8px;
     overflow: hidden;
     border: 2px solid #e2e8f0;
-    cursor: pointer;
     transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    background: white;
 }
 
 .evidencia-item:hover {
@@ -333,6 +337,13 @@
     font-size: 2rem;
 }
 
+.evidencia-media {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    cursor: pointer;
+}
+
 .evidencia-overlay {
     position: absolute;
     bottom: 0;
@@ -342,6 +353,19 @@
     padding: 0.5rem;
     color: white;
     font-size: 0.65rem;
+}
+
+.evidencia-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    padding: 0.25rem 0.4rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    align-self: flex-end;
+    margin: 0.25rem;
 }
 
 .upload-zone {
@@ -539,9 +563,14 @@
 
 /* Botones de acción en comentarios y evidencias */
 .comentario-actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
+    display: inline-flex;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.25rem 0.4rem;
+    align-self: flex-end;
 }
 
 .btn-icon {
@@ -555,6 +584,25 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+
+.btn-icon svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+
+.visibility-toggle {
+    color: #64748b;
+}
+
+.visibility-toggle[aria-pressed="true"] {
+    color: #0284c7;
+    background: #e0f2fe;
+}
+
+.visibility-toggle[aria-pressed="true"]:hover {
+    background: #e0f2fe;
 }
 
 .btn-icon:hover {

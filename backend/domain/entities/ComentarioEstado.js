@@ -8,6 +8,7 @@ class ComentarioEstado extends BaseEntity {
         this.id_usuario = data.id_usuario;
         this.texto_comentario = data.texto_comentario;
         this.fecha_hora_comentario = data.fecha_hora_comentario || new Date();
+        this.public = data.public ?? data.Public ?? false;
     }
 
     // Validaciones de negocio
@@ -40,7 +41,8 @@ class ComentarioEstado extends BaseEntity {
             id_historial: this.id_historial,
             id_usuario: this.id_usuario,
             texto_comentario: this.texto_comentario,
-            fecha_hora_comentario: this.fecha_hora_comentario
+            fecha_hora_comentario: this.fecha_hora_comentario,
+            public: this.public
         };
     }
 }

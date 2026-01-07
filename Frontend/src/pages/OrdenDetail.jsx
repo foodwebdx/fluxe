@@ -3,6 +3,7 @@ import OrdenInfoCard from '../components/orden/OrdenInfoCard';
 import EstadosTimeline from '../components/orden/EstadosTimeline';
 import '../components/orden/OrdenDetail.css';
 import { apiUrl } from '../config/api';
+import VisibilityToggle from '../components/orden/VisibilityToggle';
 
 
 const OrdenDetail = ({ ordenId, onVolver }) => {
@@ -14,6 +15,7 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
     const [error, setError] = useState(null);
     const [isClientInfoExpanded, setIsClientInfoExpanded] = useState(false);
     const [isProductInfoExpanded, setIsProductInfoExpanded] = useState(false);
+    const [updatingPublicId, setUpdatingPublicId] = useState(null);
 
     useEffect(() => {
         if (ordenId) {
@@ -82,6 +84,51 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
             }
         } catch (err) {
             console.error('Error refrescando datos:', err);
+        }
+    };
+
+    const getIsPublic = (evidencia) => Boolean(evidencia.public ?? evidencia.Public);
+
+    const updateLocalVisibility = (id, nextValue) => {
+        setEvidencias((prev) =>
+            prev.map((item) =>
+                item.id_evidencia === id
+                    ? { ...item, public: nextValue, Public: nextValue }
+                    : item
+            )
+        );
+    };
+
+    const handleToggleEvidenciaVisibility = async (evidencia) => {
+        const currentValue = getIsPublic(evidencia);
+        const nextValue = !currentValue;
+
+        updateLocalVisibility(evidencia.id_evidencia, nextValue);
+        setUpdatingPublicId(evidencia.id_evidencia);
+
+        try {
+            const response = await fetch(apiUrl(`/api/evidencias/${evidencia.id_evidencia}`), {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    public: nextValue
+                })
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Error al actualizar visibilidad');
+            }
+
+            await handleRefresh();
+        } catch (err) {
+            console.error('Error al actualizar visibilidad:', err);
+            updateLocalVisibility(evidencia.id_evidencia, currentValue);
+            alert('Error al actualizar visibilidad: ' + err.message);
+        } finally {
+            setUpdatingPublicId(null);
         }
     };
 
@@ -298,63 +345,56 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
                             };
 
                             return (
-                                <div key={evidencia.id_evidencia} className="evidencia-item" style={{ position: 'relative', cursor: 'pointer' }}>
-                                    {evidencia.tipo_evidencia === 'image' ? (
-                                        <>
-                                            <img
-                                                src={evidencia.url}
-                                                alt={evidencia.nombre_archivo_original}
-                                                className="evidencia-preview"
-                                                onClick={handleImageClick}
-                                                onError={(e) => {
-                                                    e.target.style.display = 'none';
-                                                    e.target.nextSibling.style.display = 'flex';
-                                                }}
-                                                style={{ cursor: 'pointer' }}
-                                            />
-                                            <div className="evidencia-icon" style={{ display: 'none' }}>
-                                                🖼️
+                                <div key={evidencia.id_evidencia} className="evidencia-item">
+                                    <div className="evidencia-media">
+                                        {evidencia.tipo_evidencia === 'image' ? (
+                                            <>
+                                                <img
+                                                    src={evidencia.url}
+                                                    alt={evidencia.nombre_archivo_original}
+                                                    className="evidencia-preview"
+                                                    onClick={handleImageClick}
+                                                    onError={(e) => {
+                                                        e.target.style.display = 'none';
+                                                        e.target.nextSibling.style.display = 'flex';
+                                                    }}
+                                                />
+                                                <div className="evidencia-icon" style={{ display: 'none' }}>
+                                                    🖼️
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div
+                                                className="evidencia-icon"
+                                                onClick={handleDownload}
+                                                title={`Descargar ${evidencia.nombre_archivo_original}`}
+                                            >
+                                                {getFileIcon(evidencia.tipo_evidencia)}
                                             </div>
-                                        </>
-                                    ) : (
-                                        <div
-                                            className="evidencia-icon"
-                                            onClick={handleDownload}
-                                            style={{ cursor: 'pointer' }}
-                                            title={`Descargar ${evidencia.nombre_archivo_original}`}
-                                        >
-                                            {getFileIcon(evidencia.tipo_evidencia)}
-                                        </div>
-                                    )}
-                                    <div className="evidencia-overlay">
-                                        <div>{evidencia.estados?.nombre_estado || 'Estado'}</div>
-                                        <div style={{ fontSize: '0.6rem', opacity: 0.8 }}>
-                                            {evidencia.nombre_archivo_original}
+                                        )}
+                                        <div className="evidencia-overlay">
+                                            <div>{evidencia.estados?.nombre_estado || 'Estado'}</div>
+                                            <div style={{ fontSize: '0.6rem', opacity: 0.8 }}>
+                                                {evidencia.nombre_archivo_original}
+                                            </div>
                                         </div>
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={handleDownload}
-                                        title="Descargar evidencia"
-                                        style={{
-                                            position: 'absolute',
-                                            top: '0.5rem',
-                                            right: '0.5rem',
-                                            background: '#e0f2fe',
-                                            color: '#0284c7',
-                                            border: 'none',
-                                            borderRadius: '4px',
-                                            padding: '0.25rem 0.5rem',
-                                            cursor: 'pointer',
-                                            fontSize: '1rem',
-                                            opacity: 0.9,
-                                            transition: 'opacity 0.2s'
-                                        }}
-                                        onMouseEnter={(e) => e.target.style.opacity = 1}
-                                        onMouseLeave={(e) => e.target.style.opacity = 0.9}
-                                    >
-                                        ⬇️
-                                    </button>
+                                    <div className="evidencia-actions">
+                                        <button
+                                            type="button"
+                                            className="btn-icon"
+                                            onClick={handleDownload}
+                                            title="Descargar evidencia"
+                                        >
+                                            ⬇️
+                                        </button>
+                                        <VisibilityToggle
+                                            isPublic={getIsPublic(evidencia)}
+                                            onToggle={() => handleToggleEvidenciaVisibility(evidencia)}
+                                            disabled={updatingPublicId === evidencia.id_evidencia}
+                                            title={getIsPublic(evidencia) ? 'Visible para cliente' : 'Oculto para cliente'}
+                                        />
+                                    </div>
                                 </div>
                             );
                         })}

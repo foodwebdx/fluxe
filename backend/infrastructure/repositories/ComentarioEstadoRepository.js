@@ -1,5 +1,25 @@
 const { getPrisma } = require('../database/db');
 
+const normalizeBoolean = (value) => {
+    if (typeof value === 'boolean') {
+        return value;
+    }
+    if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase();
+        if (normalized === 'true' || normalized === '1') {
+            return true;
+        }
+        if (normalized === 'false' || normalized === '0') {
+            return false;
+        }
+    }
+    if (typeof value === 'number') {
+        if (value === 1) return true;
+        if (value === 0) return false;
+    }
+    return undefined;
+};
+
 class ComentarioEstadoRepository {
     constructor() { }
 
@@ -13,11 +33,13 @@ class ComentarioEstadoRepository {
 
     async create(comentarioData) {
         try {
+            const normalizedPublic = normalizeBoolean(comentarioData.public ?? comentarioData.Public);
             const nuevoComentario = await this.getPrisma().comentarios_estado.create({
                 data: {
                     id_historial: parseInt(comentarioData.id_historial),
                     id_usuario: parseInt(comentarioData.id_usuario),
                     texto_comentario: comentarioData.texto_comentario,
+                    ...(normalizedPublic !== undefined ? { public: normalizedPublic } : {}),
                     fecha_hora_comentario: comentarioData.fecha_hora_comentario || new Date()
                 },
                 include: {
@@ -185,10 +207,12 @@ class ComentarioEstadoRepository {
 
     async update(id, comentarioData) {
         try {
+            const normalizedPublic = normalizeBoolean(comentarioData.public ?? comentarioData.Public);
             const comentarioActualizado = await this.getPrisma().comentarios_estado.update({
                 where: { id_comentario: parseInt(id) },
                 data: {
-                    texto_comentario: comentarioData.texto_comentario || undefined
+                    texto_comentario: comentarioData.texto_comentario || undefined,
+                    public: normalizedPublic !== undefined ? normalizedPublic : undefined
                 },
                 include: {
                     historial_estados_orden: {
