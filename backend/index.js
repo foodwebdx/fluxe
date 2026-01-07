@@ -7,19 +7,26 @@ const requestLogger = require('./presentation/middlewares/requestLogger');
 const { getDatabase } = require('./infrastructure/database/db');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// CORS middleware
+// CORS middleware - ACTUALIZADO para producción
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'https://fluxe.vercel.app',
+  process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : null,
+  process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : null,
+].filter(Boolean);
+
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  
-  // Handle preflight requests
+
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
-  
+
   next();
 });
 
@@ -38,10 +45,10 @@ app.get('/', (req, res) => {
     message: 'Bienvenido a Fluxe API',
     version: '1.0.0',
     orm: 'Prisma ORM',
+    environment: process.env.NODE_ENV || 'development',
     endpoints: {
       health: '/health',
       api: '/api',
-      example: '/api/example',
     },
     timestamp: new Date().toISOString(),
   });
@@ -75,36 +82,41 @@ app.use('/api', routes);
 app.use(notFound);
 app.use(errorHandler);
 
-// Start server
-const startServer = async () => {
-  try {
-    await dbConnection.connect();
+// IMPORTANTE: Solo iniciar servidor en desarrollo
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3000;
 
-    app.listen(PORT, () => {
-      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-      console.log(`📝 Health check: http://localhost:${PORT}/health`);
-      console.log(`🔗 API base: http://localhost:${PORT}/api`);
-    });
-  } catch (error) {
-    console.error('Error al iniciar el servidor:', error);
-    process.exit(1);
-  }
-};
+  const startServer = async () => {
+    try {
+      await dbConnection.connect();
 
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM recibido, cerrando servidor...');
-  await dbConnection.disconnect();
-  process.exit(0);
-});
+      app.listen(PORT, () => {
+        console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+        console.log(`📝 Health check: http://localhost:${PORT}/health`);
+        console.log(`🔗 API base: http://localhost:${PORT}/api`);
+      });
+    } catch (error) {
+      console.error('Error al iniciar el servidor:', error);
+      process.exit(1);
+    }
+  };
 
-process.on('SIGINT', async () => {
-  console.log('SIGINT recibido, cerrando servidor...');
-  await dbConnection.disconnect();
-  process.exit(0);
-});
+  // Graceful shutdown
+  process.on('SIGTERM', async () => {
+    console.log('SIGTERM recibido, cerrando servidor...');
+    await dbConnection.disconnect();
+    process.exit(0);
+  });
 
-startServer();
+  process.on('SIGINT', async () => {
+    console.log('SIGINT recibido, cerrando servidor...');
+    await dbConnection.disconnect();
+    process.exit(0);
+  });
 
+  startServer();
+}
+
+// Exportar app para Vercel
 module.exports = app;
 

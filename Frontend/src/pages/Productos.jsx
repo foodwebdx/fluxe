@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import './Dashboard.css';
+import { apiUrl } from '../config/api';
+
 
 const Productos = () => {
   const [productos, setProductos] = useState([]);
@@ -30,7 +32,7 @@ const Productos = () => {
   const fetchProductos = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3000/api/productos');
+      const response = await fetch(apiUrl('/api/productos'));
 
       if (!response.ok) {
         throw new Error('Error al cargar los productos');
@@ -49,7 +51,7 @@ const Productos = () => {
 
   const fetchClientes = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/clientes');
+      const response = await fetch(apiUrl('/api/clientes'));
       const data = await response.json();
       setClientes(data.data || []);
     } catch (err) {

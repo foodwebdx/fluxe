@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import './Dashboard.css';
+import { apiUrl } from '../config/api';
+
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
@@ -28,7 +30,7 @@ const Clientes = () => {
   const fetchClientes = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3000/api/clientes');
+      const response = await fetch(apiUrl('/api/clientes'));
       
       if (!response.ok) {
         throw new Error('Error al cargar los clientes');

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import OrdenInfoCard from '../components/orden/OrdenInfoCard';
 import EstadosTimeline from '../components/orden/EstadosTimeline';
 import '../components/orden/OrdenDetail.css';
+import { apiUrl } from '../config/api';
+
 
 const OrdenDetail = ({ ordenId, onVolver }) => {
     const [orden, setOrden] = useState(null);
@@ -25,25 +27,25 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
             setError(null);
 
             // 1. Cargar orden
-            const ordenRes = await fetch(`http://localhost:3000/api/ordenes/${ordenId}`);
+            const ordenRes = await fetch(apiUrl(`/api/ordenes/${ordenId}`));
             if (!ordenRes.ok) throw new Error('Error al cargar la orden');
             const ordenData = await ordenRes.json();
             setOrden(ordenData.data);
 
             // 2. Cargar estados del flujo
-            const flujoRes = await fetch(`http://localhost:3000/api/flujos/${ordenData.data.id_flujo}/estados`);
+            const flujoRes = await fetch(apiUrl(`/api/flujos/${ordenData.data.id_flujo}/estados`));
             if (!flujoRes.ok) throw new Error('Error al cargar estados del flujo');
             const flujoData = await flujoRes.json();
             setEstadosFlujo(flujoData.data || []);
 
             // 3. Cargar historial
-            const historialRes = await fetch(`http://localhost:3000/api/historial/orden/${ordenId}`);
+            const historialRes = await fetch(apiUrl(`/api/historial/orden/${ordenId}`));
             if (!historialRes.ok) throw new Error('Error al cargar historial');
             const historialData = await historialRes.json();
             setHistorial(historialData.data || []);
 
             // 4. Cargar evidencias
-            const evidenciasRes = await fetch(`http://localhost:3000/api/evidencias/orden/${ordenId}`);
+            const evidenciasRes = await fetch(apiUrl(`/api/evidencias/orden/${ordenId}`));
             if (!evidenciasRes.ok) throw new Error('Error al cargar evidencias');
             const evidenciasData = await evidenciasRes.json();
             setEvidencias(evidenciasData.data || []);
@@ -65,8 +67,8 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
         // Recargar historial y evidencias
         try {
             const [historialRes, evidenciasRes] = await Promise.all([
-                fetch(`http://localhost:3000/api/historial/orden/${ordenId}`),
-                fetch(`http://localhost:3000/api/evidencias/orden/${ordenId}`)
+                fetch(apiUrl(`/api/historial/orden/${ordenId}`)),
+                fetch(apiUrl(`/api/evidencias/orden/${ordenId}`))
             ]);
 
             if (historialRes.ok) {
