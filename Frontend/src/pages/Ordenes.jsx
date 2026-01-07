@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import './Dashboard.css';
+import { apiUrl } from '../config/api';
+
 
 const Ordenes = ({ onVerOrden }) => {
   const [ordenes, setOrdenes] = useState([]);
@@ -79,10 +81,10 @@ const Ordenes = ({ onVerOrden }) => {
   const fetchFormData = async () => {
     try {
       const [clientesRes, productosRes, flujosRes, estadosRes] = await Promise.all([
-        fetch('http://localhost:3000/api/clientes'),
-        fetch('http://localhost:3000/api/productos'),
-        fetch('http://localhost:3000/api/flujos'),
-        fetch('http://localhost:3000/api/estados')
+        fetch(apiUrl('/api/clientes')),
+        fetch(apiUrl('/api/productos')),
+        fetch(apiUrl('/api/flujos')),
+        fetch(apiUrl('/api/estados'))
       ]);
 
       const clientesData = await clientesRes.json();
@@ -157,7 +159,7 @@ const Ordenes = ({ onVerOrden }) => {
 
   const fetchEstadosFlujo = async (idFlujo, idEstadoActual = null) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/flujos/${idFlujo}/estados`);
+      const response = await fetch(apiUrl(`/api/flujos/${idFlujo}/estados`));
       const data = await response.json();
       const estadosFlujo = data.data || [];
 
@@ -305,7 +307,7 @@ const Ordenes = ({ onVerOrden }) => {
   const fetchEvidencias = async (idOrden) => {
     try {
       setLoadingEvidencias(true);
-      const response = await fetch(`http://localhost:3000/api/evidencias/orden/${idOrden}`);
+      const response = await fetch(apiUrl(`/api/evidencias/orden/${idOrden}`));
 
       if (!response.ok) {
         throw new Error('Error al cargar evidencias');
@@ -606,7 +608,7 @@ const Ordenes = ({ onVerOrden }) => {
   const fetchOrdenes = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3000/api/ordenes');
+      const response = await fetch(apiUrl('/api/ordenes'));
 
       if (!response.ok) {
         throw new Error('Error al cargar las órdenes');

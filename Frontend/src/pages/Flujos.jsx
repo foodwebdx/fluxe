@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import './Dashboard.css';
+import { apiUrl } from '../config/api';
+
 
 const Flujos = () => {
   const [flujos, setFlujos] = useState([]);
@@ -35,7 +37,7 @@ const Flujos = () => {
   const fetchFlujos = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3000/api/flujos');
+      const response = await fetch(apiUrl('/api/flujos'));
       
       if (!response.ok) {
         throw new Error('Error al cargar los flujos');
@@ -54,7 +56,7 @@ const Flujos = () => {
 
   const fetchEstados = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/estados');
+      const response = await fetch(apiUrl('/api/estados'));
       const data = await response.json();
       setEstados(data.data || []);
     } catch (err) {
@@ -64,7 +66,7 @@ const Flujos = () => {
 
   const fetchEstadosFlujo = async (idFlujo) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/flujos/${idFlujo}/estados`);
+      const response = await fetch(apiUrl(`/api/flujos/${idFlujo}/estados`));
       const data = await response.json();
       setEstadosFlujo(data.data || []);
     } catch (err) {
@@ -99,7 +101,7 @@ const Flujos = () => {
       activo: flujo.activo
     });
     // Cargar estados del flujo
-    const response = await fetch(`http://localhost:3000/api/flujos/${flujo.id_flujo}/estados`);
+    const response = await fetch(apiUrl(`/api/flujos/${flujo.id_flujo}/estados`));
     const data = await response.json();
     // Mapear los estados con su información completa
     const estadosMapeados = (data.data || []).map(ef => ({
@@ -124,7 +126,7 @@ const Flujos = () => {
       activo: flujo.activo
     });
     // Cargar estados del flujo
-    const response = await fetch(`http://localhost:3000/api/flujos/${flujo.id_flujo}/estados`);
+    const response = await fetch(apiUrl(`/api/flujos/${flujo.id_flujo}/estados`));
     const data = await response.json();
     // Mapear los estados con su información completa
     const estadosMapeados = (data.data || []).map(ef => ({

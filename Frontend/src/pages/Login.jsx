@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { apiUrl } from '../config/api';
 import './Login.css';
 
 const Login = ({ onLogin }) => {
@@ -18,7 +19,7 @@ const Login = ({ onLogin }) => {
 
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      const response = await fetch(apiUrl('/api/auth/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

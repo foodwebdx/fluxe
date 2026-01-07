@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import './Dashboard.css';
+import { apiUrl } from '../config/api';
+
 
 const Estados = () => {
     const [estados, setEstados] = useState([]);
@@ -22,7 +24,7 @@ const Estados = () => {
     const fetchEstados = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:3000/api/estados');
+            const response = await fetch(apiUrl('/api/estados'));
 
             if (!response.ok) {
                 throw new Error('Error al cargar los estados');

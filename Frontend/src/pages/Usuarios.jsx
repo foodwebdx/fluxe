@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import './Dashboard.css';
+import { apiUrl } from '../config/api';
+
 
 const Usuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -28,8 +30,8 @@ const Usuarios = () => {
     try {
       setLoading(true);
       const [usuariosResponse, rolesResponse] = await Promise.all([
-        fetch('http://localhost:3000/api/usuarios'),
-        fetch('http://localhost:3000/api/roles'),
+        fetch(apiUrl('/api/usuarios')),
+        fetch(apiUrl('/api/roles')),
       ]);
 
       if (!usuariosResponse.ok || !rolesResponse.ok) {
@@ -51,7 +53,7 @@ const Usuarios = () => {
 
   const fetchUsuarios = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/usuarios');
+      const response = await fetch(apiUrl('/api/usuarios'));
 
       if (!response.ok) {
         throw new Error('Error al cargar usuarios');

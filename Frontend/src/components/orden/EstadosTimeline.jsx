@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import TimelineEstado from './TimelineEstado';
 import EstadoModal from './EstadoModal';
+import { apiUrl } from '../../config/api';
+
 
 const EstadosTimeline = ({
     estadosFlujo,
