@@ -6,6 +6,7 @@ const FlujoRepository = require('../../../infrastructure/repositories/FlujoRepos
 const HistorialEstadoRepository = require('../../../infrastructure/repositories/HistorialEstadoRepository');
 const CreateProductoUseCase = require('../producto/CreateProductoUseCase');
 const WhatsAppService = require('../../../infrastructure/services/WhatsAppService').default;
+const EmailService = require('../../../infrastructure/services/EmailService');
 
 class CreateOrdenUseCase extends IUseCase {
     constructor() {
@@ -151,7 +152,7 @@ class CreateOrdenUseCase extends IUseCase {
     }
 
     /**
-     * Envía notificación de WhatsApp al cliente cuando se crea una orden
+     * Envía notificación de WhatsApp y correo al cliente cuando se crea una orden
      * Este método es asíncrono y no bloquea el flujo principal
      */
     async enviarNotificacionOrdenCreada(orden, clienteId) {
@@ -164,20 +165,37 @@ class CreateOrdenUseCase extends IUseCase {
                 return;
             }
 
-            // Enviar notificación usando el template orden_creada
-            const resultado = await WhatsAppService.sendTemplate(
-                cliente.telefono_contacto,
-                'orden_creada',
-                [
-                    { type: 'text', parameterName: 'cliente_nombre', text: cliente.nombre_completo },
-                    { type: 'text', parameterName: 'orden_numero', text: `#${orden.id_orden}` }
-                ]
-            );
+            const mensaje = `¡Hola ${cliente.nombre_completo}! Tu orden ` +
+                `#${orden.id_orden} ha sido creada exitosamente. ` +
+                'Te mantendremos informado sobre su progreso.';
+            const asunto = `Confirmación de orden #${orden.id_orden}`;
 
-            if (resultado.sent) {
+            const [resultadoWhatsApp, resultadoEmail] = await Promise.all([
+                WhatsAppService.sendTemplate(
+                    cliente.telefono_contacto,
+                    'orden_creada',
+                    [
+                        { type: 'text', parameterName: 'cliente_nombre', text: cliente.nombre_completo },
+                        { type: 'text', parameterName: 'orden_numero', text: `#${orden.id_orden}` }
+                    ]
+                ),
+                EmailService.sendEmail({
+                    to: cliente.correo_electronico,
+                    subject: asunto,
+                    text: mensaje
+                })
+            ]);
+
+            if (resultadoWhatsApp.sent) {
                 console.log(`✅ Notificación de orden creada enviada a ${cliente.nombre_completo} (${cliente.telefono_contacto})`);
             } else {
-                console.log(`⚠️ No se envió notificación de orden creada: ${resultado.reason || resultado.error}`);
+                console.log(`⚠️ No se envió notificación de orden creada: ${resultadoWhatsApp.reason || resultadoWhatsApp.error}`);
+            }
+
+            if (resultadoEmail.sent) {
+                console.log(`✅ Correo de orden creada enviado a ${cliente.nombre_completo} (${cliente.correo_electronico})`);
+            } else {
+                console.log(`⚠️ No se envió correo de orden creada: ${resultadoEmail.reason || resultadoEmail.error}`);
             }
         } catch (error) {
             // No lanzar error para no afectar el flujo principal
