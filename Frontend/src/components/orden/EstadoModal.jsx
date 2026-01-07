@@ -3,7 +3,13 @@ import ComentariosSection from './ComentariosSection';
 import { apiUrl } from '../../config/api';
 import VisibilityToggle from './VisibilityToggle';
 
-const EstadoModal = ({ estado, evidencias, onClose, onRefresh }) => {
+const EstadoModal = ({
+    estado,
+    evidencias,
+    onClose,
+    onRefresh,
+    showVisibilityToggle = true
+}) => {
     const [localEvidencias, setLocalEvidencias] = useState(evidencias || []);
     const [togglingId, setTogglingId] = useState(null);
 
@@ -155,6 +161,7 @@ const EstadoModal = ({ estado, evidencias, onClose, onRefresh }) => {
                     comentarios={estado.historial?.comentarios_estado || []}
                     readOnly={true}
                     onRefresh={onRefresh}
+                    showVisibilityToggle={showVisibilityToggle}
                 />
 
                 {/* Evidencias (solo lectura) */}
@@ -203,12 +210,14 @@ const EstadoModal = ({ estado, evidencias, onClose, onRefresh }) => {
                                         >
                                             ⬇️
                                         </button>
-                                        <VisibilityToggle
-                                            isPublic={getIsPublic(evidencia)}
-                                            onToggle={() => handleToggleVisibility(evidencia)}
-                                            disabled={togglingId === evidencia.id_evidencia}
-                                            title={getIsPublic(evidencia) ? 'Visible para cliente' : 'Oculto para cliente'}
-                                        />
+                                        {showVisibilityToggle && (
+                                            <VisibilityToggle
+                                                isPublic={getIsPublic(evidencia)}
+                                                onToggle={() => handleToggleVisibility(evidencia)}
+                                                disabled={togglingId === evidencia.id_evidencia}
+                                                title={getIsPublic(evidencia) ? 'Visible para cliente' : 'Oculto para cliente'}
+                                            />
+                                        )}
                                     </div>
                                 </div>
                             ))}

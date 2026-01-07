@@ -11,7 +11,9 @@ const EstadosTimeline = ({
     ordenId,
     evidencias,
     onEstadoChange,
-    onRefresh
+    onRefresh,
+    readOnly = false,
+    showVisibilityToggle = true
 }) => {
     const [selectedEstado, setSelectedEstado] = useState(null);
     const [showModal, setShowModal] = useState(false);
@@ -162,7 +164,13 @@ const EstadosTimeline = ({
                         estado={estado}
                         type="completed"
                         onClick={() => handleVerEstado(estado)}
-                        onRetroceder={index === estadosPrevios.length - 1 ? handleRetrocederEstado : null}
+                        onRetroceder={
+                            !readOnly && index === estadosPrevios.length - 1
+                                ? handleRetrocederEstado
+                                : null
+                        }
+                        readOnly={readOnly}
+                        showVisibilityToggle={showVisibilityToggle}
                     />
                 ))}
 
@@ -174,6 +182,8 @@ const EstadosTimeline = ({
                         ordenId={ordenId}
                         evidencias={evidencias.filter(e => e.id_estado === estadoActual.id_estado)}
                         onRefresh={onRefresh}
+                        readOnly={readOnly}
+                        showVisibilityToggle={showVisibilityToggle}
                     />
                 )}
 
@@ -183,7 +193,13 @@ const EstadosTimeline = ({
                         key={estado.id_estado}
                         estado={estado}
                         type="pending"
-                        onAvanzar={index === 0 ? () => handleAvanzarEstado(estado) : null}
+                        onAvanzar={
+                            !readOnly && index === 0
+                                ? () => handleAvanzarEstado(estado)
+                                : null
+                        }
+                        readOnly={readOnly}
+                        showVisibilityToggle={showVisibilityToggle}
                     />
                 ))}
             </div>
@@ -195,6 +211,7 @@ const EstadosTimeline = ({
                     evidencias={evidenciasEstado}
                     onClose={handleCloseModal}
                     onRefresh={onRefresh}
+                    showVisibilityToggle={showVisibilityToggle}
                 />
             )}
         </div>
