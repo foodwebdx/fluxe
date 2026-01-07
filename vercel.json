@@ -1,8 +1,6 @@
 {
     "version": 2,
     "name": "fluxe",
-    "buildCommand": "cd Frontend && npm install && npm run build",
-    "outputDirectory": "Frontend/dist",
     "rewrites": [
         {
             "source": "/api/(.*)",
