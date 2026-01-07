@@ -74,7 +74,8 @@ class HistorialEstadoRepository {
                         select: {
                             id_comentario: true,
                             texto_comentario: true,
-                            fecha_hora_comentario: true
+                            fecha_hora_comentario: true,
+                            public: true
                         }
                     }
                 }
@@ -110,7 +111,8 @@ class HistorialEstadoRepository {
                         select: {
                             id_comentario: true,
                             texto_comentario: true,
-                            fecha_hora_comentario: true
+                            fecha_hora_comentario: true,
+                            public: true
                         }
                     }
                 },
