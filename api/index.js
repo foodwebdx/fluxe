@@ -1,4 +1,4 @@
 const app = require('../backend/index');
 
-// Vercel serverless handler
+// Vercel serverless handle
 module.exports = app;
