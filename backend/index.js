@@ -8,7 +8,7 @@ const { getDatabase } = require('./infrastructure/database/db');
 
 const app = express();
 
-// CORS middleware - ACTUALIZADO para producción
+// CORS middleware - ACTUALIZADO para produccion
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'https://fluxe.vercel.app',
   process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : null,
