@@ -4,6 +4,7 @@ import EstadosTimeline from '../components/orden/EstadosTimeline';
 import '../components/orden/OrdenDetail.css';
 import { apiUrl } from '../config/api';
 import VisibilityToggle from '../components/orden/VisibilityToggle';
+import { DownloadIcon } from '../components/orden/ActionIcons';
 
 
 const OrdenDetail = ({ ordenId, onVolver }) => {
@@ -386,7 +387,7 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
                                             onClick={handleDownload}
                                             title="Descargar evidencia"
                                         >
-                                            ⬇️
+                                            <DownloadIcon />
                                         </button>
                                         <VisibilityToggle
                                             isPublic={getIsPublic(evidencia)}

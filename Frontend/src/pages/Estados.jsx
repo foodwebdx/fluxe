@@ -243,7 +243,7 @@ const Estados = () => {
             {/* Modal para crear/editar estado */}
             {showModal && (
                 <div className="modal-overlay">
-                    <div className="modal-container">
+                    <div className="modal-content">
                         <div className="modal-header">
                             <h2>{modalMode === 'create' ? '➕ Nuevo Estado' : '✏️ Editar Estado'}</h2>
                             <button className="modal-close" onClick={handleCloseModal}>×</button>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import ComentariosSection from './ComentariosSection';
 import { apiUrl } from '../../config/api';
 import VisibilityToggle from './VisibilityToggle';
+import { DownloadIcon } from './ActionIcons';
 
 const EstadoModal = ({ estado, evidencias, onClose, onRefresh }) => {
     const [localEvidencias, setLocalEvidencias] = useState(evidencias || []);
@@ -201,7 +202,7 @@ const EstadoModal = ({ estado, evidencias, onClose, onRefresh }) => {
                                             onClick={() => handleDownload(evidencia)}
                                             title="Descargar evidencia"
                                         >
-                                            ⬇️
+                                            <DownloadIcon />
                                         </button>
                                         <VisibilityToggle
                                             isPublic={getIsPublic(evidencia)}

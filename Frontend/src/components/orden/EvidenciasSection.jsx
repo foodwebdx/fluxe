@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { apiUrl } from '../../config/api';
 import VisibilityToggle from './VisibilityToggle';
+import { DownloadIcon, TrashIcon } from './ActionIcons';
 
 
 const EvidenciasSection = ({
@@ -255,7 +256,7 @@ const EvidenciasSection = ({
                                     onClick={() => handleDownload(evidencia)}
                                     title="Descargar evidencia"
                                 >
-                                    ⬇️
+                                    <DownloadIcon />
                                 </button>
                                 <VisibilityToggle
                                     isPublic={getIsPublic(evidencia)}
@@ -271,7 +272,7 @@ const EvidenciasSection = ({
                                         title="Eliminar evidencia"
                                         disabled={uploading}
                                     >
-                                        🗑️
+                                        <TrashIcon />
                                     </button>
                                 )}
                             </div>
