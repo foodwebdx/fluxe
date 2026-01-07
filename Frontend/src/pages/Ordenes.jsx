@@ -7,7 +7,7 @@ const Ordenes = ({ onVerOrden }) => {
   const [ordenes, setOrdenes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false); // modales
   const [modalMode, setModalMode] = useState('create'); // 'create', 'view', 'edit'
   const [selectedOrden, setSelectedOrden] = useState(null);
   const [clientes, setClientes] = useState([]);
