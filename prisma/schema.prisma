@@ -29,6 +29,7 @@ model comentarios_estado {
   id_usuario              Int
   texto_comentario        String
   fecha_hora_comentario   DateTime                @default(now()) @db.Timestamp(6)
+  public                  Boolean                 @default(false) @map("Public")
   historial_estados_orden historial_estados_orden @relation(fields: [id_historial], references: [id_historial], onDelete: Cascade, onUpdate: NoAction, map: "fk_comentarios_historial")
   usuarios                usuarios                @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_comentarios_usuario")
 }
@@ -52,6 +53,7 @@ model evidencias {
   s3_key                  String   @db.VarChar(255)
   nombre_archivo_original String?  @db.VarChar(255)
   comentario              String?
+  public                  Boolean  @default(false) @map("Public")
   fecha_subida            DateTime @default(now()) @db.Timestamp(6)
   estados                 estados  @relation(fields: [id_estado], references: [id_estado], onDelete: NoAction, onUpdate: NoAction, map: "fk_evidencias_estado")
   ordenes                 ordenes  @relation(fields: [id_orden], references: [id_orden], onDelete: Cascade, onUpdate: NoAction, map: "fk_evidencias_orden")

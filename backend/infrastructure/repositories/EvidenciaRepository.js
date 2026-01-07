@@ -1,5 +1,25 @@
 const { getPrisma } = require('../database/db');
 
+const normalizeBoolean = (value) => {
+    if (typeof value === 'boolean') {
+        return value;
+    }
+    if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase();
+        if (normalized === 'true' || normalized === '1') {
+            return true;
+        }
+        if (normalized === 'false' || normalized === '0') {
+            return false;
+        }
+    }
+    if (typeof value === 'number') {
+        if (value === 1) return true;
+        if (value === 0) return false;
+    }
+    return undefined;
+};
+
 class EvidenciaRepository {
     constructor() { }
 
@@ -13,6 +33,7 @@ class EvidenciaRepository {
 
     async create(evidenciaData) {
         try {
+            const normalizedPublic = normalizeBoolean(evidenciaData.public ?? evidenciaData.Public);
             const nuevaEvidencia = await this.getPrisma().evidencias.create({
                 data: {
                     id_orden: parseInt(evidenciaData.id_orden),
@@ -22,6 +43,7 @@ class EvidenciaRepository {
                     s3_key: evidenciaData.s3_key,
                     nombre_archivo_original: evidenciaData.nombre_archivo_original || null,
                     comentario: evidenciaData.comentario || null,
+                    ...(normalizedPublic !== undefined ? { public: normalizedPublic } : {}),
                     fecha_subida: evidenciaData.fecha_subida || new Date()
                 },
                 include: {
@@ -217,13 +239,15 @@ class EvidenciaRepository {
 
     async update(id, evidenciaData) {
         try {
+            const normalizedPublic = normalizeBoolean(evidenciaData.public ?? evidenciaData.Public);
             const evidenciaActualizada = await this.getPrisma().evidencias.update({
                 where: { id_evidencia: parseInt(id) },
                 data: {
                     tipo_evidencia: evidenciaData.tipo_evidencia || undefined,
                     s3_key: evidenciaData.s3_key || undefined,
                     nombre_archivo_original: evidenciaData.nombre_archivo_original || undefined,
-                    comentario: evidenciaData.comentario !== undefined ? evidenciaData.comentario : undefined
+                    comentario: evidenciaData.comentario !== undefined ? evidenciaData.comentario : undefined,
+                    public: normalizedPublic !== undefined ? normalizedPublic : undefined
                 },
                 include: {
                     ordenes: {

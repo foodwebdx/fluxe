@@ -11,6 +11,7 @@ class Evidencia extends BaseEntity {
         this.s3_key = data.s3_key;
         this.nombre_archivo_original = data.nombre_archivo_original || null;
         this.comentario = data.comentario || null;
+        this.public = data.public ?? data.Public ?? false;
         this.fecha_subida = data.fecha_subida || new Date();
     }
 
@@ -61,6 +62,7 @@ class Evidencia extends BaseEntity {
             s3_key: this.s3_key,
             nombre_archivo_original: this.nombre_archivo_original,
             comentario: this.comentario,
+            public: this.public,
             fecha_subida: this.fecha_subida
         };
     }

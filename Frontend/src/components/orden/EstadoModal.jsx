@@ -1,7 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import ComentariosSection from './ComentariosSection';
+import { apiUrl } from '../../config/api';
+import VisibilityToggle from './VisibilityToggle';
 
-const EstadoModal = ({ estado, evidencias, onClose }) => {
+const EstadoModal = ({ estado, evidencias, onClose, onRefresh }) => {
+    const [localEvidencias, setLocalEvidencias] = useState(evidencias || []);
+    const [togglingId, setTogglingId] = useState(null);
+
+    useEffect(() => {
+        setLocalEvidencias(evidencias || []);
+    }, [evidencias]);
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
         const date = new Date(dateString);
@@ -55,6 +63,53 @@ const EstadoModal = ({ estado, evidencias, onClose }) => {
         }
     };
 
+    const getIsPublic = (evidencia) => Boolean(evidencia.public ?? evidencia.Public);
+
+    const updateLocalVisibility = (id, nextValue) => {
+        setLocalEvidencias((prev) =>
+            prev.map((item) =>
+                item.id_evidencia === id
+                    ? { ...item, public: nextValue, Public: nextValue }
+                    : item
+            )
+        );
+    };
+
+    const handleToggleVisibility = async (evidencia) => {
+        const currentValue = getIsPublic(evidencia);
+        const nextValue = !currentValue;
+
+        updateLocalVisibility(evidencia.id_evidencia, nextValue);
+        setTogglingId(evidencia.id_evidencia);
+
+        try {
+            const response = await fetch(apiUrl(`/api/evidencias/${evidencia.id_evidencia}`), {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    public: nextValue
+                })
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Error al actualizar visibilidad');
+            }
+
+            if (onRefresh) {
+                await onRefresh();
+            }
+        } catch (err) {
+            console.error('Error al actualizar visibilidad:', err);
+            updateLocalVisibility(evidencia.id_evidencia, currentValue);
+            alert('Error al actualizar visibilidad: ' + err.message);
+        } finally {
+            setTogglingId(null);
+        }
+    };
+
     return (
         <div className="estado-modal-overlay" onClick={onClose}>
             <div className="estado-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -99,68 +154,62 @@ const EstadoModal = ({ estado, evidencias, onClose }) => {
                     historialId={estado.historial?.id_historial}
                     comentarios={estado.historial?.comentarios_estado || []}
                     readOnly={true}
+                    onRefresh={onRefresh}
                 />
 
                 {/* Evidencias (solo lectura) */}
                 <div className="evidencias-section" style={{ marginTop: '1.5rem' }}>
                     <h4>📎 Evidencias</h4>
-                    {evidencias && evidencias.length > 0 ? (
+                    {localEvidencias && localEvidencias.length > 0 ? (
                         <div className="evidencias-grid">
-                            {evidencias.map((evidencia) => (
-                                <div key={evidencia.id_evidencia} className="evidencia-item" style={{ position: 'relative', cursor: 'pointer' }}>
-                                    {evidencia.tipo_evidencia === 'image' ? (
-                                        <>
-                                            <img
-                                                src={evidencia.url}
-                                                alt={evidencia.nombre_archivo_original}
-                                                className="evidencia-preview"
-                                                onClick={() => handleImageClick(evidencia)}
-                                                onError={(e) => {
-                                                    e.target.style.display = 'none';
-                                                    e.target.nextSibling.style.display = 'flex';
-                                                }}
-                                                style={{ cursor: 'pointer' }}
-                                            />
-                                            <div className="evidencia-icon" style={{ display: 'none' }}>
-                                                🖼️
+                            {localEvidencias.map((evidencia) => (
+                                <div key={evidencia.id_evidencia} className="evidencia-item">
+                                    <div className="evidencia-media">
+                                        {evidencia.tipo_evidencia === 'image' ? (
+                                            <>
+                                                <img
+                                                    src={evidencia.url}
+                                                    alt={evidencia.nombre_archivo_original}
+                                                    className="evidencia-preview"
+                                                    onClick={() => handleImageClick(evidencia)}
+                                                    onError={(e) => {
+                                                        e.target.style.display = 'none';
+                                                        e.target.nextSibling.style.display = 'flex';
+                                                    }}
+                                                />
+                                                <div className="evidencia-icon" style={{ display: 'none' }}>
+                                                    🖼️
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div
+                                                className="evidencia-icon"
+                                                onClick={() => handleDownload(evidencia)}
+                                                title={`Descargar ${evidencia.nombre_archivo_original}`}
+                                            >
+                                                {getFileIcon(evidencia.tipo_evidencia)}
                                             </div>
-                                        </>
-                                    ) : (
-                                        <div
-                                            className="evidencia-icon"
-                                            onClick={() => handleDownload(evidencia)}
-                                            style={{ cursor: 'pointer' }}
-                                            title={`Descargar ${evidencia.nombre_archivo_original}`}
-                                        >
-                                            {getFileIcon(evidencia.tipo_evidencia)}
+                                        )}
+                                        <div className="evidencia-overlay">
+                                            {evidencia.nombre_archivo_original}
                                         </div>
-                                    )}
-                                    <div className="evidencia-overlay">
-                                        {evidencia.nombre_archivo_original}
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleDownload(evidencia)}
-                                        title="Descargar evidencia"
-                                        style={{
-                                            position: 'absolute',
-                                            top: '0.5rem',
-                                            right: '0.5rem',
-                                            background: '#e0f2fe',
-                                            color: '#0284c7',
-                                            border: 'none',
-                                            borderRadius: '4px',
-                                            padding: '0.25rem 0.5rem',
-                                            cursor: 'pointer',
-                                            fontSize: '1rem',
-                                            opacity: 0.9,
-                                            transition: 'opacity 0.2s'
-                                        }}
-                                        onMouseEnter={(e) => e.target.style.opacity = 1}
-                                        onMouseLeave={(e) => e.target.style.opacity = 0.9}
-                                    >
-                                        ⬇️
-                                    </button>
+                                    <div className="evidencia-actions">
+                                        <button
+                                            type="button"
+                                            className="btn-icon"
+                                            onClick={() => handleDownload(evidencia)}
+                                            title="Descargar evidencia"
+                                        >
+                                            ⬇️
+                                        </button>
+                                        <VisibilityToggle
+                                            isPublic={getIsPublic(evidencia)}
+                                            onToggle={() => handleToggleVisibility(evidencia)}
+                                            disabled={togglingId === evidencia.id_evidencia}
+                                            title={getIsPublic(evidencia) ? 'Visible para cliente' : 'Oculto para cliente'}
+                                        />
+                                    </div>
                                 </div>
                             ))}
                         </div>

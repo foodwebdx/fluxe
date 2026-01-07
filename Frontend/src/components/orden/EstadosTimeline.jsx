@@ -194,6 +194,7 @@ const EstadosTimeline = ({
                     estado={selectedEstado}
                     evidencias={evidenciasEstado}
                     onClose={handleCloseModal}
+                    onRefresh={onRefresh}
                 />
             )}
         </div>
