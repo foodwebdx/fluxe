@@ -12,14 +12,15 @@ export const API_BASE_URL = isDevelopment
 export const apiUrl = (path) => {
     // Asegurar que path empiece con /
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    const normalizedBaseUrl = API_BASE_URL.replace(/\/+$/, '');
 
     // En producción, las rutas son relativas (mismo dominio)
     if (!isDevelopment) {
-        return normalizedPath;
+        return normalizedBaseUrl ? `${normalizedBaseUrl}${normalizedPath}` : normalizedPath;
     }
 
     // En desarrollo, usar localhost
-    return `${API_BASE_URL}${normalizedPath}`;
+    return `${normalizedBaseUrl}${normalizedPath}`;
 };
 
 // Exportar por defecto

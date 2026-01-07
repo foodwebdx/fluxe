@@ -122,7 +122,7 @@ const Clientes = () => {
       let response;
       
       if (modalMode === 'edit') {
-        response = await fetch(`http://localhost:3000/api/clientes/${selectedCliente.id_cliente}`, {
+        response = await fetch(apiUrl(`/api/clientes/${selectedCliente.id_cliente}`), {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ const Clientes = () => {
           body: JSON.stringify(formData)
         });
       } else {
-        response = await fetch('http://localhost:3000/api/clientes', {
+        response = await fetch(apiUrl('/api/clientes'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -159,7 +159,7 @@ const Clientes = () => {
     if (!confirm('¿Está seguro de eliminar este cliente?')) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/clientes/${id}`, {
+      const response = await fetch(apiUrl(`/api/clientes/${id}`), {
         method: 'DELETE'
       });
 

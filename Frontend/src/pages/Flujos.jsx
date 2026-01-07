@@ -173,7 +173,7 @@ const Flujos = () => {
       
       if (modalMode === 'edit') {
         // Actualizar flujo
-        response = await fetch(`http://localhost:3000/api/flujos/${selectedFlujo.id_flujo}`, {
+        response = await fetch(apiUrl(`/api/flujos/${selectedFlujo.id_flujo}`), {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -193,7 +193,7 @@ const Flujos = () => {
           obligatorio: est.obligatorio !== false
         }));
 
-        const estadosResponse = await fetch(`http://localhost:3000/api/flujos/${selectedFlujo.id_flujo}/estados`, {
+        const estadosResponse = await fetch(apiUrl(`/api/flujos/${selectedFlujo.id_flujo}/estados`), {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -207,7 +207,7 @@ const Flujos = () => {
         }
       } else {
         // Crear flujo
-        response = await fetch('http://localhost:3000/api/flujos', {
+        response = await fetch(apiUrl('/api/flujos'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -229,7 +229,7 @@ const Flujos = () => {
             obligatorio: est.obligatorio !== false
           }));
 
-          const estadosResponse = await fetch(`http://localhost:3000/api/flujos/${data.data.id_flujo}/estados`, {
+          const estadosResponse = await fetch(apiUrl(`/api/flujos/${data.data.id_flujo}/estados`), {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -344,7 +344,7 @@ const Flujos = () => {
     setEstadoModalError(null);
 
     try {
-      const response = await fetch('http://localhost:3000/api/estados', {
+      const response = await fetch(apiUrl('/api/estados'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -382,7 +382,7 @@ const Flujos = () => {
     if (!confirm('¿Está seguro de eliminar este flujo?')) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/flujos/${id}`, {
+      const response = await fetch(apiUrl(`/api/flujos/${id}`), {
         method: 'DELETE'
       });
 

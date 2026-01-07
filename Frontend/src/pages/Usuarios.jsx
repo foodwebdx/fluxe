@@ -163,7 +163,7 @@ const Usuarios = () => {
 
     rolesToAdd.forEach((roleId) => {
       requests.push(
-        fetch('http://localhost:3000/api/usuarios-roles', {
+        fetch(apiUrl('/api/usuarios-roles'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -178,7 +178,7 @@ const Usuarios = () => {
 
     rolesToRemove.forEach((roleId) => {
       requests.push(
-        fetch(`http://localhost:3000/api/usuarios-roles/${userId}/${roleId}`, {
+        fetch(apiUrl(`/api/usuarios-roles/${userId}/${roleId}`), {
           method: 'DELETE',
         })
       );
@@ -230,7 +230,7 @@ const Usuarios = () => {
 
       if (modalMode === 'edit') {
         response = await fetch(
-          `http://localhost:3000/api/usuarios/${selectedUsuario.id_usuario}`,
+          apiUrl(`/api/usuarios/${selectedUsuario.id_usuario}`),
           {
             method: 'PUT',
             headers: {
@@ -242,7 +242,7 @@ const Usuarios = () => {
         userId = selectedUsuario.id_usuario;
         currentRoles = (selectedUsuario.roles || []).map((rol) => rol.id_rol);
       } else {
-        response = await fetch('http://localhost:3000/api/usuarios', {
+        response = await fetch(apiUrl('/api/usuarios'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -286,7 +286,7 @@ const Usuarios = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/api/usuarios/${id}`, {
+      const response = await fetch(apiUrl(`/api/usuarios/${id}`), {
         method: 'DELETE',
       });
 

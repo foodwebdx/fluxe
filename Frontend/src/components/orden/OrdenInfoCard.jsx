@@ -41,7 +41,7 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange }) => {
 
         try {
             setLoading(true);
-            const response = await fetch(`http://localhost:3000/api/ordenes/${orden.id_orden}/fecha-entrega`, {
+            const response = await fetch(apiUrl(`/api/ordenes/${orden.id_orden}/fecha-entrega`), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

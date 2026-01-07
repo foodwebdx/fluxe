@@ -36,7 +36,7 @@ const ComentariosSection = ({
         setSubmitting(true);
 
         try {
-            const response = await fetch('http://localhost:3000/api/comentarios', {
+            const response = await fetch(apiUrl('/api/comentarios'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ const ComentariosSection = ({
         setSubmitting(true);
 
         try {
-            const response = await fetch(`http://localhost:3000/api/comentarios/${id}`, {
+            const response = await fetch(apiUrl(`/api/comentarios/${id}`), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -126,7 +126,7 @@ const ComentariosSection = ({
         setSubmitting(true);
 
         try {
-            const response = await fetch(`http://localhost:3000/api/comentarios/${id}`, {
+            const response = await fetch(apiUrl(`/api/comentarios/${id}`), {
                 method: 'DELETE'
             });
 

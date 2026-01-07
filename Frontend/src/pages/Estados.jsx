@@ -69,7 +69,7 @@ const Estados = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:3000/api/estados/${estado.id_estado}`, {
+            const response = await fetch(apiUrl(`/api/estados/${estado.id_estado}`), {
                 method: 'DELETE'
             });
 
@@ -111,8 +111,8 @@ const Estados = () => {
 
         try {
             const url = modalMode === 'create'
-                ? 'http://localhost:3000/api/estados'
-                : `http://localhost:3000/api/estados/${selectedEstado.id_estado}`;
+                ? apiUrl('/api/estados')
+                : apiUrl(`/api/estados/${selectedEstado.id_estado}`);
 
             const method = modalMode === 'create' ? 'POST' : 'PUT';
 

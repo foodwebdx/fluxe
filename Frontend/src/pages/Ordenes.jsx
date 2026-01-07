@@ -403,8 +403,8 @@ const Ordenes = ({ onVerOrden }) => {
     try {
       const isEdit = evidenceMode === 'edit';
       const url = isEdit
-        ? `http://localhost:3000/api/evidencias/${selectedEvidencia.id_evidencia}`
-        : 'http://localhost:3000/api/evidencias';
+        ? apiUrl(`/api/evidencias/${selectedEvidencia.id_evidencia}`)
+        : apiUrl('/api/evidencias');
 
       const method = isEdit ? 'PUT' : 'POST';
 
@@ -457,7 +457,7 @@ const Ordenes = ({ onVerOrden }) => {
     if (!confirm('¿Estás seguro de eliminar esta evidencia?')) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/evidencias/${idEvidencia}`, {
+      const response = await fetch(apiUrl(`/api/evidencias/${idEvidencia}`), {
         method: 'DELETE'
       });
 
@@ -476,7 +476,7 @@ const Ordenes = ({ onVerOrden }) => {
     if (!confirm('¿Está seguro de eliminar esta orden? Esta acción no se puede deshacer.')) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/ordenes/${id}`, {
+      const response = await fetch(apiUrl(`/api/ordenes/${id}`), {
         method: 'DELETE'
       });
 
@@ -525,7 +525,7 @@ const Ordenes = ({ onVerOrden }) => {
 
       if (modalMode === 'edit') {
         // Actualizar el estado
-        response = await fetch(`http://localhost:3000/api/ordenes/${selectedOrden.id_orden}/estado`, {
+        response = await fetch(apiUrl(`/api/ordenes/${selectedOrden.id_orden}/estado`), {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -555,7 +555,7 @@ const Ordenes = ({ onVerOrden }) => {
             comentario: evidenciaComentario || null
           };
 
-          const evidenciaResponse = await fetch('http://localhost:3000/api/evidencias', {
+          const evidenciaResponse = await fetch(apiUrl('/api/evidencias'), {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -603,7 +603,7 @@ const Ordenes = ({ onVerOrden }) => {
 
         // NO enviar id_estado_actual - el backend lo asigna automáticamente
 
-        response = await fetch('http://localhost:3000/api/ordenes', {
+        response = await fetch(apiUrl('/api/ordenes'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
