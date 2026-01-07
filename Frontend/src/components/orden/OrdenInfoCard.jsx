@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { apiUrl } from '../../config/api';
 
 
-const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange }) => {
+const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly = false }) => {
     const [editingFecha, setEditingFecha] = useState(false);
     const [nuevaFecha, setNuevaFecha] = useState('');
     const [loading, setLoading] = useState(false);
@@ -76,6 +76,8 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange }) => {
             setLoading(false);
         }
     };
+
+    const canEditFecha = !readOnly && !isInFinalState;
 
     return (
         <div className="orden-info-card">
@@ -163,7 +165,7 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange }) => {
                 <div className="info-section">
                     <div className="info-label">
                         🎯 Fecha Estimada de Entrega
-                        {!editingFecha && !isInFinalState && (
+                        {!editingFecha && canEditFecha && (
                             <button 
                                 onClick={handleEditFecha}
                                 className="btn-icon"

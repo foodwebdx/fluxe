@@ -10,3 +10,8 @@
   overflow-y: auto;
   background: #f8fafc;
 }
+
+.public-app {
+  min-height: 100vh;
+  background: #f8fafc;
+}
