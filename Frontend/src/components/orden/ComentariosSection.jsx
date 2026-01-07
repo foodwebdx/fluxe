@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { apiUrl } from '../../config/api';
 import VisibilityToggle from './VisibilityToggle';
-import { EditIcon, TrashIcon } from './ActionIcons';
 
 
 const ComentariosSection = ({
@@ -271,7 +270,7 @@ const ComentariosSection = ({
                                                     title="Editar comentario"
                                                     disabled={submitting}
                                                 >
-                                                    <EditIcon />
+                                                    ✏️
                                                 </button>
                                                 <button
                                                     type="button"
@@ -280,7 +279,7 @@ const ComentariosSection = ({
                                                     title="Eliminar comentario"
                                                     disabled={submitting}
                                                 >
-                                                    <TrashIcon />
+                                                    🗑️
                                                 </button>
                                             </>
                                         )}
