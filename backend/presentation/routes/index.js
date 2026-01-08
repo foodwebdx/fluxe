@@ -13,6 +13,8 @@ const usuarioRoutes = require('./usuario.routes');
 const rolRoutes = require('./rol.routes');
 const usuarioRolRoutes = require('./usuarioRol.routes');
 const authRoutes = require('./auth.routes');
+const webhookRoutes = require('./webhook.routes');
+const whatsappMensajesRoutes = require('./whatsappMensajes.routes');
 
 const router = express.Router();
 
@@ -169,6 +171,20 @@ router.get('/', (req, res) => {
           'POST /api/auth/login - Iniciar sesion'
         ]
       },
+      webhooks: {
+        path: '/api/webhooks/whatsapp',
+        methods: ['POST'],
+        description: 'Recepcion de webhooks de KAPSO'
+      },
+      whatsapp_mensajes: {
+        path: '/api/whatsapp-mensajes',
+        methods: ['GET'],
+        description: 'Consulta de mensajes de WhatsApp guardados',
+        endpoints: [
+          'GET /api/whatsapp-mensajes - Listar mensajes (filtros: ?phone_number, ?direction, ?limit)',
+          'GET /api/whatsapp-mensajes/orden/:idOrden - Mensajes por orden'
+        ]
+      },
     },
     timestamp: new Date().toISOString(),
   });
@@ -188,5 +204,7 @@ router.use('/usuarios', usuarioRoutes);
 router.use('/roles', rolRoutes);
 router.use('/usuarios-roles', usuarioRolRoutes);
 router.use('/auth', authRoutes);
+router.use('/webhooks', webhookRoutes);
+router.use('/whatsapp-mensajes', whatsappMensajesRoutes);
 
 module.exports = router;
