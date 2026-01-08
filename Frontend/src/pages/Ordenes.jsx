@@ -522,6 +522,7 @@ const Ordenes = ({ onVerOrden }) => {
 
     try {
       let response;
+      let data;
 
       if (modalMode === 'edit') {
         // Actualizar el estado
@@ -535,7 +536,7 @@ const Ordenes = ({ onVerOrden }) => {
           })
         });
 
-        const data = await response.json();
+        data = await response.json();
 
         if (!response.ok) {
           throw new Error(data.message || 'Error al actualizar el estado');
@@ -611,11 +612,35 @@ const Ordenes = ({ onVerOrden }) => {
           body: JSON.stringify(payload)
         });
 
-        const data = await response.json();
+        data = await response.json();
 
         if (!response.ok) {
           throw new Error(data.message || 'Error al crear la orden');
         }
+
+        const messageParts = [
+          data?.message || 'Orden creada exitosamente'
+        ];
+
+        if (data?.data?.id_orden) {
+          messageParts.push(`#${data.data.id_orden}`);
+        }
+
+        if (data?.cliente_creado) {
+          messageParts.push('Cliente creado');
+        }
+
+        if (data?.producto_creado) {
+          messageParts.push('Producto creado');
+        }
+
+        if (data?.whatsapp?.sent === true) {
+          messageParts.push('Notificación WhatsApp enviada');
+        } else if (data?.whatsapp?.sent === false) {
+          messageParts.push('No se pudo enviar WhatsApp');
+        }
+
+        alert(messageParts.join(' - '));
       }
 
       // Recargar órdenes y cerrar modal
