@@ -42,6 +42,17 @@ class WhatsAppWebhookController {
         this.mensajesRepository = new WhatsAppMensajeRepository();
     }
 
+    getEvent(req, payload) {
+        const headerEvent = req.headers['x-webhook-event'];
+        if (headerEvent) return headerEvent;
+        const bodyEvent = req.body?.event;
+        if (bodyEvent) return bodyEvent;
+        if (payload?.message?.kapso?.direction === 'inbound') {
+            return 'whatsapp.message.received';
+        }
+        return null;
+    }
+
     async handle(req, res) {
         try {
             const secret = process.env.KAPSO_WEBHOOK_SECRET;
@@ -52,14 +63,20 @@ class WhatsAppWebhookController {
                 const isValid = verifyWebhookSignature(rawBody, signature, secret);
 
                 if (!isValid) {
+                    console.log('Webhook signature invalid');
                     return res.status(401).send('Invalid signature');
                 }
             }
 
-            const event = req.headers['x-webhook-event'] || req.body?.event;
             const payload = req.body?.data || req.body;
+            const event = this.getEvent(req, payload);
+            if (!event) {
+                console.log('Webhook ignored: missing event');
+                return res.status(200).send('OK');
+            }
 
             if (event !== 'whatsapp.message.received') {
+                console.log('Webhook ignored: unsupported event', event);
                 return res.status(200).send('OK');
             }
 
@@ -68,6 +85,7 @@ class WhatsAppWebhookController {
             const phoneNumberRaw = conversation?.phone_number;
 
             if (!message?.id || !phoneNumberRaw) {
+                console.log('Webhook ignored: missing message id or phone number');
                 return res.status(200).send('OK');
             }
 
@@ -82,6 +100,7 @@ class WhatsAppWebhookController {
             const body = getMessageBody(message);
             const normalized = normalizeYesNo(body);
             if (normalized !== 'si' && normalized !== 'no') {
+                console.log('Webhook ignored: inbound is not si/no', body);
                 return res.status(200).send('OK');
             }
 
@@ -90,6 +109,7 @@ class WhatsAppWebhookController {
                 lastOutbound.created_at
             );
             if (existingInbound) {
+                console.log('Webhook ignored: inbound already stored for order', lastOutbound.id_orden);
                 return res.status(200).send('OK');
             }
 
@@ -108,6 +128,11 @@ class WhatsAppWebhookController {
                 created_at: createdAt
             });
 
+            console.log('Webhook stored inbound response', {
+                id_orden: lastOutbound.id_orden,
+                message_id: message.id,
+                body
+            });
             return res.status(200).send('OK');
         } catch (error) {
             if (error.code === 'P2002') {
