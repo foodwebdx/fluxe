@@ -9,6 +9,16 @@ class WhatsAppService {
         this._initialized = false;
     }
 
+    _appendHelpFooter(body) {
+        if (!body) return body;
+        const footer = 'Si quieres ayuda para ver como va tu orden, escribe "Ayuda".';
+        const normalized = body.toLowerCase();
+        if (normalized.includes('ayuda para ver como va tu orden')) {
+            return body;
+        }
+        return `${body}\n\n${footer}`;
+    }
+
     _extractMessageId(response) {
         return response?.messages?.[0]?.id ||
             response?.data?.messages?.[0]?.id ||
@@ -366,11 +376,12 @@ class WhatsAppService {
 
         try {
             const phoneNumber = this.formatPhoneNumber(to);
+            const messageBody = this._appendHelpFooter(body);
 
             const response = await this.client.messages.sendText({
                 phoneNumberId: this.phoneNumberId,
                 to: phoneNumber,
-                body: body
+                body: messageBody
             });
 
             const messageId = this._extractMessageId(response);
