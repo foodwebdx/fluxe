@@ -168,10 +168,14 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
 
                 if (resultadoWhatsApp.sent) {
                     console.log(`✅ Notificación de orden completada enviada a ${cliente.nombre_completo} (${cliente.telefono_contacto})`);
-                    if (resultadoWhatsApp.messageId && phoneNumber) {
+                    if (phoneNumber) {
+                        const messageId = resultadoWhatsApp.messageId || `outbound-${orden.id_orden}-${Date.now()}`;
+                        if (!resultadoWhatsApp.messageId) {
+                            console.log('WhatsApp messageId missing, usando fallback para guardar outbound');
+                        }
                         await this.whatsAppMensajeRepository.create({
                             id_orden: orden.id_orden,
-                            message_id: resultadoWhatsApp.messageId,
+                            message_id: messageId,
                             direction: 'outbound',
                             phone_number: phoneNumber,
                             conversation_id: null,
