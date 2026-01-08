@@ -1,4 +1,5 @@
 import ComentariosSection from './ComentariosSection';
+import BloqueosSection from './BloqueosSection';
 import EvidenciasSection from './EvidenciasSection';
 
 const TimelineEstado = ({
@@ -64,6 +65,13 @@ const TimelineEstado = ({
             {/* Contenido expandido para estado actual */}
             {type === 'current' && estado.historial && (
                 <div className="estado-content">
+                    <BloqueosSection
+                        historialId={estado.historial.id_historial}
+                        bloqueos={estado.historial.bloqueos_estado || []}
+                        onRefresh={onRefresh}
+                        readOnly={readOnly}
+                    />
+
                     <ComentariosSection
                         historialId={estado.historial.id_historial}
                         comentarios={estado.historial.comentarios_estado || []}

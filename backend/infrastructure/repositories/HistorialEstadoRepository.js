@@ -77,6 +77,21 @@ class HistorialEstadoRepository {
                             fecha_hora_comentario: true,
                             public: true
                         }
+                    },
+                    bloqueos_estado: {
+                        select: {
+                            id_bloqueo: true,
+                            descripcion_bloqueo: true,
+                            fecha_hora_bloqueo: true,
+                            estado_bloqueado: true,
+                            usuarios: {
+                                select: {
+                                    id_usuario: true,
+                                    nombre: true,
+                                    email: true
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -113,6 +128,21 @@ class HistorialEstadoRepository {
                             texto_comentario: true,
                             fecha_hora_comentario: true,
                             public: true
+                        }
+                    },
+                    bloqueos_estado: {
+                        select: {
+                            id_bloqueo: true,
+                            descripcion_bloqueo: true,
+                            fecha_hora_bloqueo: true,
+                            estado_bloqueado: true,
+                            usuarios: {
+                                select: {
+                                    id_usuario: true,
+                                    nombre: true,
+                                    email: true
+                                }
+                            }
                         }
                     }
                 },
@@ -178,6 +208,14 @@ class HistorialEstadoRepository {
                             id_usuario: true,
                             nombre: true,
                             email: true
+                        }
+                    },
+                    bloqueos_estado: {
+                        select: {
+                            id_bloqueo: true,
+                            descripcion_bloqueo: true,
+                            fecha_hora_bloqueo: true,
+                            estado_bloqueado: true
                         }
                     }
                 },

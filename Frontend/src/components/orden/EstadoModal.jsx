@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import ComentariosSection from './ComentariosSection';
+import BloqueosSection from './BloqueosSection';
 import { apiUrl } from '../../config/api';
 import VisibilityToggle from './VisibilityToggle';
 
@@ -156,6 +157,13 @@ const EstadoModal = ({
                 )}
 
                 {/* Comentarios (solo lectura) */}
+                <BloqueosSection
+                    historialId={estado.historial?.id_historial}
+                    bloqueos={estado.historial?.bloqueos_estado || []}
+                    readOnly={true}
+                    onRefresh={onRefresh}
+                />
+
                 <ComentariosSection
                     historialId={estado.historial?.id_historial}
                     comentarios={estado.historial?.comentarios_estado || []}
