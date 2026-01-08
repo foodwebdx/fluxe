@@ -4,6 +4,7 @@ const CreateOrdenUseCase = require('../../application/usecases/orden/CreateOrden
 const UpdateOrdenUseCase = require('../../application/usecases/orden/UpdateOrdenUseCase');
 const CambiarEstadoOrdenUseCase = require('../../application/usecases/orden/CambiarEstadoOrdenUseCase');
 const DeleteOrdenUseCase = require('../../application/usecases/orden/DeleteOrdenUseCase');
+const GetDashboardMetricsUseCase = require('../../application/usecases/orden/GetDashboardMetricsUseCase');
 const OrdenRepository = require('../../infrastructure/repositories/OrdenRepository');
 
 class OrdenController {
@@ -14,6 +15,7 @@ class OrdenController {
         this.updateOrdenUseCase = new UpdateOrdenUseCase();
         this.cambiarEstadoUseCase = new CambiarEstadoOrdenUseCase();
         this.deleteOrdenUseCase = new DeleteOrdenUseCase();
+        this.getDashboardMetricsUseCase = new GetDashboardMetricsUseCase();
         this.ordenRepository = new OrdenRepository();
     }
 
@@ -235,6 +237,24 @@ class OrdenController {
             return res.status(500).json({
                 success: false,
                 message: error.message || 'Error al actualizar la fecha de entrega',
+            });
+        }
+    }
+
+    async getDashboardMetrics(req, res) {
+        try {
+            const result = await this.getDashboardMetricsUseCase.execute();
+
+            return res.status(200).json({
+                success: true,
+                message: 'Métricas del dashboard obtenidas exitosamente',
+                ...result,
+            });
+        } catch (error) {
+            console.error('Error en getDashboardMetrics:', error);
+            return res.status(500).json({
+                success: false,
+                message: error.message || 'Error al obtener métricas del dashboard',
             });
         }
     }

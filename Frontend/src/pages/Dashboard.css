@@ -60,6 +60,39 @@
   line-height: 1;
 }
 
+.export-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-export {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: white;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-export:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-export:active {
+  transform: translateY(0);
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -154,6 +187,51 @@
   .stats-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Estilos para distribución por estado */
+.estados-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.estado-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.estado-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.estado-nombre {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.estado-cantidad {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.estado-bar {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.estado-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
 }
 
 /* Estilos para la tabla de órdenes */
@@ -566,5 +644,73 @@
   .btn-cancel,
   .btn-submit {
     width: 100%;
+  }
+
+  .export-buttons {
+    width: 100%;
+  }
+
+  .btn-export {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* Estilos para impresión */
+@media print {
+  /* Ocultar elementos de navegación y controles */
+  nav,
+  .navbar,
+  .sidebar,
+  header,
+  footer,
+  .export-buttons,
+  .btn-export,
+  button {
+    display: none !important;
+  }
+
+  /* Resetear body y html para impresión */
+  body,
+  html {
+    margin: 0;
+    padding: 0;
+  }
+
+  .dashboard {
+    background: white;
+    padding: 1rem;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .dashboard-header {
+    border-bottom: 2px solid #0f172a;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .subtitle::after {
+    content: " - " attr(data-print-date);
+  }
+
+  .stat-card,
+  .chart-card {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 1rem;
+  }
+
+  .charts-grid {
+    page-break-inside: avoid;
+  }
+
+  .stats-grid {
+    page-break-inside: avoid;
   }
 }

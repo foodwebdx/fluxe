@@ -4,6 +4,9 @@ const OrdenController = require('../controllers/OrdenController');
 const router = express.Router();
 const ordenController = new OrdenController();
 
+// GET /api/ordenes/dashboard/metrics - Obtener métricas del dashboard
+router.get('/dashboard/metrics', (req, res) => ordenController.getDashboardMetrics(req, res));
+
 // GET /api/ordenes - Obtener todas las órdenes (con filtros opcionales)
 // Query params: ?id_cliente=X, ?id_estado=Y, ?id_flujo=Z
 router.get('/', (req, res) => ordenController.getAll(req, res));
