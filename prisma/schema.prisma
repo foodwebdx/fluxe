@@ -110,6 +110,17 @@ model ordenes {
   estados                 estados                   @relation(fields: [id_estado_actual], references: [id_estado], onDelete: NoAction, onUpdate: NoAction, map: "fk_ordenes_estado")
   flujos                  flujos                    @relation(fields: [id_flujo], references: [id_flujo], onDelete: NoAction, onUpdate: NoAction, map: "fk_ordenes_flujo")
   productos               productos                 @relation(fields: [id_producto], references: [id_producto], onUpdate: NoAction, map: "fk_ordenes_producto")
+  encuesta                encuesta?
+}
+
+model encuesta {
+  id_orden               Int       @id
+  comentario             String?
+  satisfaccion_servicio  Int
+  satisfaccion_tiempo    Int
+  satisfaccion_general   Int
+  fecha_respuesta        DateTime  @default(now()) @db.Timestamp(6)
+  ordenes                ordenes   @relation(fields: [id_orden], references: [id_orden], onDelete: Cascade, onUpdate: NoAction, map: "fk_encuesta_orden")
 }
 
 model productos {

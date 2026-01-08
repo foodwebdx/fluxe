@@ -5,6 +5,7 @@ const Sidebar = ({ activeView, setActiveView, user, onLogout, allowedViews }) =>
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'ordenes', label: 'Ordenes', icon: '📦' },
     { id: 'consulta-orden', label: 'Consulta', icon: '🔍' },
+    { id: 'encuesta-orden', label: 'Encuesta', icon: '📝' },
     { id: 'clientes', label: 'Clientes', icon: '👥' },
     { id: 'productos', label: 'Productos', icon: '📦' },
     { id: 'flujos', label: 'Flujos', icon: '🌊' },
