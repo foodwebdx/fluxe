@@ -150,7 +150,7 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
                 const asunto = `Orden #${orden.id_orden} completada`;
 
                 const [resultadoWhatsApp, resultadoEmail] = await Promise.all([
-                    WhatsAppService.notifyOrderCompleted(cliente, orden, encuestaUrl),
+                    WhatsAppService.notifyOrderCompleted(cliente, orden, encuestaUrl, mensaje),
                     EmailService.sendEmail({
                         to: cliente.correo_electronico,
                         subject: asunto,
