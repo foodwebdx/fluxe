@@ -9,6 +9,15 @@ class WhatsAppService {
         this._initialized = false;
     }
 
+    _extractMessageId(response) {
+        return response?.messages?.[0]?.id ||
+            response?.data?.messages?.[0]?.id ||
+            response?.data?.messageId ||
+            response?.data?.id ||
+            response?.messageId ||
+            response?.id;
+    }
+
     /**
      * Inicializa el cliente de WhatsApp (lazy initialization)
      */
@@ -132,7 +141,7 @@ class WhatsAppService {
             return {
                 sent: true,
                 timestamp: new Date(),
-                messageId: response?.messages?.[0]?.id
+                messageId: this._extractMessageId(response)
             };
         } catch (error) {
             console.error('Error sending WhatsApp notification:', error);
@@ -219,7 +228,7 @@ class WhatsAppService {
                 return {
                     sent: true,
                     timestamp: new Date(),
-                    messageId: response?.messages?.[0]?.id
+                    messageId: this._extractMessageId(response)
                 };
             } catch (templateError) {
                 // Si el template no existe, enviar mensaje de texto
@@ -364,10 +373,15 @@ class WhatsAppService {
                 body: body
             });
 
+            const messageId = this._extractMessageId(response);
+            if (!messageId) {
+                console.log('WhatsApp sendTextMessage without messageId');
+            }
+
             return {
                 sent: true,
                 timestamp: new Date(),
-                messageId: response?.messages?.[0]?.id
+                messageId
             };
         } catch (error) {
             console.error('Error sending WhatsApp text message:', error);
@@ -411,7 +425,7 @@ class WhatsAppService {
             return {
                 sent: true,
                 timestamp: new Date(),
-                messageId: response?.messages?.[0]?.id
+                messageId: this._extractMessageId(response)
             };
         } catch (error) {
             console.error('Error sending WhatsApp template:', error);
