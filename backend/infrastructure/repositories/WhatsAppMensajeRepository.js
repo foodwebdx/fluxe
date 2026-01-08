@@ -75,6 +75,17 @@ class WhatsAppMensajeRepository {
         }
     }
 
+    async deleteByOrden(idOrden) {
+        try {
+            return await this.getPrisma().whatsapp_mensajes.deleteMany({
+                where: { id_orden: parseInt(idOrden) }
+            });
+        } catch (error) {
+            console.error('Error en deleteByOrden:', error);
+            throw error;
+        }
+    }
+
     async findFirstInboundByOrdenSince(idOrden, sinceDate) {
         try {
             const where = {
