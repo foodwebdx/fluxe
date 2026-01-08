@@ -171,14 +171,7 @@ class CreateOrdenUseCase extends IUseCase {
             const asunto = `Confirmación de orden #${orden.id_orden}`;
 
             const [resultadoWhatsApp, resultadoEmail] = await Promise.all([
-                WhatsAppService.sendTemplate(
-                    cliente.telefono_contacto,
-                    'orden_creada',
-                    [
-                        { type: 'text', parameterName: 'cliente_nombre', text: cliente.nombre_completo },
-                        { type: 'text', parameterName: 'orden_numero', text: `#${orden.id_orden}` }
-                    ]
-                ),
+                WhatsAppService.notifyOrderCreated(cliente, orden),
                 EmailService.sendEmail({
                     to: cliente.correo_electronico,
                     subject: asunto,
