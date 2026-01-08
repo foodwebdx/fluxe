@@ -8,6 +8,7 @@ const ordenRoutes = require('./orden.routes');
 const historialRoutes = require('./historial.routes');
 const comentarioRoutes = require('./comentario.routes');
 const evidenciaRoutes = require('./evidencia.routes');
+const encuestaRoutes = require('./encuesta.routes');
 const usuarioRoutes = require('./usuario.routes');
 const rolRoutes = require('./rol.routes');
 const usuarioRolRoutes = require('./usuarioRol.routes');
@@ -112,6 +113,19 @@ router.get('/', (req, res) => {
           'DELETE /api/evidencias/:id - Eliminar evidencia'
         ]
       },
+      encuestas: {
+        path: '/api/encuestas',
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        description: 'Gestión de encuestas de satisfacción por orden',
+        endpoints: [
+          'GET /api/encuestas - Listar todas las encuestas',
+          'GET /api/encuestas/orden/:idOrden - Encuesta por orden',
+          'GET /api/encuestas/:id - Encuesta por ID de orden',
+          'POST /api/encuestas - Crear encuesta',
+          'PUT /api/encuestas/:id - Actualizar encuesta',
+          'DELETE /api/encuestas/:id - Eliminar encuesta'
+        ]
+      },
       usuarios: {
         path: '/api/usuarios',
         methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -169,6 +183,7 @@ router.use('/ordenes', ordenRoutes);
 router.use('/historial', historialRoutes);
 router.use('/comentarios', comentarioRoutes);
 router.use('/evidencias', evidenciaRoutes);
+router.use('/encuestas', encuestaRoutes);
 router.use('/usuarios', usuarioRoutes);
 router.use('/roles', rolRoutes);
 router.use('/usuarios-roles', usuarioRolRoutes);

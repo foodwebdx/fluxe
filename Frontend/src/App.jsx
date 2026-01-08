@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Ordenes from './pages/Ordenes';
 import OrdenDetail from './pages/OrdenDetail';
 import OrdenLookup from './pages/OrdenLookup';
+import EncuestaOrden from './pages/EncuestaOrden';
 import Clientes from './pages/Clientes';
 import Productos from './pages/Productos';
 import Flujos from './pages/Flujos';
@@ -14,6 +15,7 @@ import './App.css';
 
 const AUTH_STORAGE_KEY = 'fluxe_auth';
 const PUBLIC_ORDER_PATH = '/consulta-orden';
+const PUBLIC_SURVEY_PATH = '/encuesta-orden';
 
 function App() {
   const [activeView, setActiveView] = useState('dashboard');
@@ -61,14 +63,15 @@ function App() {
     'ordenes',
     'orden-detail',
     'consulta-orden',
+    'encuesta-orden',
     'clientes',
     'productos',
     'flujos',
     'estados',
     'usuarios',
   ];
-  const staffViews = ['ordenes', 'orden-detail', 'consulta-orden', 'clientes', 'productos'];
-  const defaultViews = ['ordenes', 'orden-detail', 'consulta-orden'];
+  const staffViews = ['ordenes', 'orden-detail', 'consulta-orden', 'encuesta-orden', 'clientes', 'productos'];
+  const defaultViews = ['ordenes', 'orden-detail', 'consulta-orden', 'encuesta-orden'];
   const allowedViews =
     hasOwnerRole || hasAdminRole
       ? allViews
@@ -82,7 +85,18 @@ function App() {
     }
     const normalizedPath = window.location.pathname.replace(/\/$/, '');
     const normalizedHash = window.location.hash.replace(/^#/, '').replace(/\/$/, '');
-    return normalizedPath === PUBLIC_ORDER_PATH || normalizedHash === PUBLIC_ORDER_PATH;
+    const hashPath = normalizedHash.split('?')[0];
+    return normalizedPath === PUBLIC_ORDER_PATH || hashPath === PUBLIC_ORDER_PATH;
+  })();
+
+  const isPublicSurveyPath = (() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    const normalizedPath = window.location.pathname.replace(/\/$/, '');
+    const normalizedHash = window.location.hash.replace(/^#/, '').replace(/\/$/, '');
+    const hashPath = normalizedHash.split('?')[0];
+    return normalizedPath === PUBLIC_SURVEY_PATH || hashPath === PUBLIC_SURVEY_PATH;
   })();
 
   const handleSetActiveView = (view) => {
@@ -125,6 +139,14 @@ function App() {
     }
   }, [activeView, allowedViews, isAuthenticated]);
 
+  if (isPublicSurveyPath) {
+    return (
+      <div className="public-app">
+        <EncuestaOrden isPublic={true} />
+      </div>
+    );
+  }
+
   if (isPublicOrdenPath) {
     return (
       <div className="public-app">
@@ -156,6 +178,7 @@ function App() {
           />
         )}
         {activeView === 'consulta-orden' && <OrdenLookup isPublic={false} />}
+        {activeView === 'encuesta-orden' && <EncuestaOrden isPublic={false} />}
         {activeView === 'clientes' && <Clientes />}
         {activeView === 'productos' && <Productos />}
         {activeView === 'flujos' && <Flujos />}

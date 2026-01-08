@@ -134,13 +134,17 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
 
             // Si es el último estado, usar notificación de orden completada
             if (esUltimoEstado) {
+                const baseUrl = process.env.FRONTEND_URL || 'https://fluxe.vercel.app';
+                const encuestaUrl = `${baseUrl.replace(/\/+$/, '')}/encuesta-orden?orden=${orden.id_orden}`;
+
                 const mensaje = `¡Excelente noticia ${cliente.nombre_completo}!\n\n` +
                     `Tu orden #${orden.id_orden} ha sido completada.\n\n` +
-                    'Gracias por confiar en nosotros.';
+                    `Gracias por confiar en nosotros.\n\n` +
+                    `Queremos conocer tu experiencia. Completa esta encuesta:\n${encuestaUrl}`;
                 const asunto = `Orden #${orden.id_orden} completada`;
 
                 const [resultadoWhatsApp, resultadoEmail] = await Promise.all([
-                    WhatsAppService.notifyOrderCompleted(cliente, orden),
+                    WhatsAppService.notifyOrderCompleted(cliente, orden, encuestaUrl),
                     EmailService.sendEmail({
                         to: cliente.correo_electronico,
                         subject: asunto,

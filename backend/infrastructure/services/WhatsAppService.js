@@ -295,7 +295,7 @@ class WhatsAppService {
      * @param {Object} orden - Datos de la orden
      * @returns {Promise<Object>} - Resultado del envío
      */
-    async notifyOrderCompleted(cliente, orden) {
+    async notifyOrderCompleted(cliente, orden, surveyUrl = null) {
         if (!this.isConfigured()) {
             console.log('WhatsApp notifications disabled or not configured');
             return { sent: false, reason: 'service_disabled' };
@@ -310,9 +310,13 @@ class WhatsAppService {
             const phoneNumber = this.formatPhoneNumber(cliente.telefono_contacto);
 
             // Enviar directamente como mensaje de texto
-            const mensaje = `¡Excelente noticia ${cliente.nombre_completo}!\n\n` +
+            let mensaje = `¡Excelente noticia ${cliente.nombre_completo}!\n\n` +
                 `Tu orden #${orden.id_orden} ha sido completada.\n\n` +
-                `Gracias por confiar en nosotros.`;
+                'Gracias por confiar en nosotros.';
+
+            if (surveyUrl) {
+                mensaje += `\n\nQueremos conocer tu experiencia. Completa esta encuesta:\n${surveyUrl}`;
+            }
 
             const resultado = await this.sendTextMessage(phoneNumber, mensaje);
 
