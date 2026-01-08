@@ -284,6 +284,122 @@
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+/* Sección de bloqueos */
+.bloqueos-section {
+    margin-bottom: 1.5rem;
+}
+
+.bloqueos-section h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #1e293b;
+    font-size: 1rem;
+}
+
+.bloqueos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.bloqueo-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 3px solid #ef4444;
+    display: flex;
+    flex-direction: column;
+}
+
+.bloqueo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.bloqueo-usuario {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.875rem;
+}
+
+.bloqueo-fecha {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.bloqueo-texto {
+    color: #475569;
+    line-height: 1.5;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.bloqueo-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.bloqueo-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.bloqueo-status.active {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.bloqueo-status.resolved {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.bloqueo-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.bloqueo-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    resize: vertical;
+}
+
+.bloqueo-input:focus {
+    outline: none;
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: #2563eb;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.8rem;
+}
+
+.btn-link.danger {
+    color: #b91c1c;
+}
+
+.btn-link:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 /* Sección de evidencias */
 .evidencias-section {
     margin-bottom: 1.5rem;

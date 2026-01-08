@@ -34,6 +34,17 @@ model comentarios_estado {
   usuarios                usuarios                @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_comentarios_usuario")
 }
 
+model bloqueos_estado {
+  id_bloqueo         Int                     @id @default(autoincrement())
+  id_historial       Int
+  id_usuario         Int
+  descripcion_bloqueo String
+  fecha_hora_bloqueo DateTime                @default(now()) @db.Timestamp(6)
+  estado_bloqueado   Boolean                 @default(true)
+  historial_estados_orden historial_estados_orden @relation(fields: [id_historial], references: [id_historial], onDelete: Cascade, onUpdate: NoAction, map: "fk_bloqueos_historial")
+  usuarios           usuarios                @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_bloqueos_usuario")
+}
+
 model estados {
   id_estado               Int                       @id @default(autoincrement())
   nombre_estado           String                    @unique @db.VarChar(100)
@@ -87,6 +98,7 @@ model historial_estados_orden {
   id_usuario_responsable Int
   fecha_hora_cambio      DateTime             @default(now()) @db.Timestamp(6)
   comentarios_estado     comentarios_estado[]
+  bloqueos_estado        bloqueos_estado[]
   estados                estados              @relation(fields: [id_estado], references: [id_estado], onDelete: NoAction, onUpdate: NoAction, map: "fk_historial_estado")
   ordenes                ordenes              @relation(fields: [id_orden], references: [id_orden], onDelete: Cascade, onUpdate: NoAction, map: "fk_historial_orden")
   usuarios               usuarios             @relation(fields: [id_usuario_responsable], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_historial_usuario")
@@ -153,6 +165,7 @@ model usuarios {
   usuario_login           String?                   @db.VarChar(100)
   hash_password           String?                   @db.VarChar(255)
   comentarios_estado      comentarios_estado[]
+  bloqueos_estado         bloqueos_estado[]
   evidencias              evidencias[]
   historial_estados_orden historial_estados_orden[]
   usuarios_roles          usuarios_roles[]

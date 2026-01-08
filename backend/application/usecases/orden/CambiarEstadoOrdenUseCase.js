@@ -3,6 +3,7 @@ const OrdenRepository = require('../../../infrastructure/repositories/OrdenRepos
 const FlujoRepository = require('../../../infrastructure/repositories/FlujoRepository');
 const HistorialEstadoRepository = require('../../../infrastructure/repositories/HistorialEstadoRepository');
 const ClienteRepository = require('../../../infrastructure/repositories/ClienteRepository');
+const BloqueoEstadoRepository = require('../../../infrastructure/repositories/BloqueoEstadoRepository');
 const WhatsAppService = require('../../../infrastructure/services/WhatsAppService').default;
 const EmailService = require('../../../infrastructure/services/EmailService');
 const WhatsAppMensajeRepository = require('../../../infrastructure/repositories/WhatsAppMensajeRepository');
@@ -14,6 +15,7 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
         this.flujoRepository = new FlujoRepository();
         this.historialRepository = new HistorialEstadoRepository();
         this.clienteRepository = new ClienteRepository();
+        this.bloqueoRepository = new BloqueoEstadoRepository();
         this.whatsAppMensajeRepository = new WhatsAppMensajeRepository();
     }
 
@@ -64,6 +66,14 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
                 if (estadosIntermedios.length > 0) {
                     const nombresEstados = estadosIntermedios.map(e => e.estados?.nombre_estado || 'Estado').join(', ');
                     throw new Error(`No se pueden saltar los siguientes estados obligatorios: ${nombresEstados}`);
+                }
+
+                const ultimoHistorial = await this.historialRepository.findLastByOrden(idOrden);
+                if (ultimoHistorial && ultimoHistorial.id_estado === orden.id_estado_actual) {
+                    const bloqueoActivo = await this.bloqueoRepository.findActiveByHistorial(ultimoHistorial.id_historial);
+                    if (bloqueoActivo) {
+                        throw new Error('No se puede avanzar de estado porque existe un bloqueo activo en el estado actual');
+                    }
                 }
             }
             // Si retrocede (nuevoEstadoPos < estadoActualPos), se permite sin restricciones

@@ -7,6 +7,7 @@ const productoRoutes = require('./producto.routes');
 const ordenRoutes = require('./orden.routes');
 const historialRoutes = require('./historial.routes');
 const comentarioRoutes = require('./comentario.routes');
+const bloqueoEstadoRoutes = require('./bloqueoEstado.routes');
 const evidenciaRoutes = require('./evidencia.routes');
 const encuestaRoutes = require('./encuesta.routes');
 const usuarioRoutes = require('./usuario.routes');
@@ -101,6 +102,19 @@ router.get('/', (req, res) => {
           'POST /api/comentarios - Crear comentario',
           'PUT /api/comentarios/:id - Actualizar comentario',
           'DELETE /api/comentarios/:id - Eliminar comentario'
+        ]
+      },
+      bloqueos_estado: {
+        path: '/api/bloqueos-estado',
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        description: 'Gestión de bloqueos asociados a cambios de estado',
+        endpoints: [
+          'GET /api/bloqueos-estado - Listar todos los bloqueos',
+          'GET /api/bloqueos-estado/historial/:idHistorial - Bloqueos de un historial',
+          'GET /api/bloqueos-estado/orden/:idOrden - Bloqueos de una orden',
+          'POST /api/bloqueos-estado - Crear bloqueo',
+          'PUT /api/bloqueos-estado/:id - Actualizar bloqueo',
+          'DELETE /api/bloqueos-estado/:id - Eliminar bloqueo'
         ]
       },
       evidencias: {
@@ -198,6 +212,7 @@ router.use('/productos', productoRoutes);
 router.use('/ordenes', ordenRoutes);
 router.use('/historial', historialRoutes);
 router.use('/comentarios', comentarioRoutes);
+router.use('/bloqueos-estado', bloqueoEstadoRoutes);
 router.use('/evidencias', evidenciaRoutes);
 router.use('/encuestas', encuestaRoutes);
 router.use('/usuarios', usuarioRoutes);
