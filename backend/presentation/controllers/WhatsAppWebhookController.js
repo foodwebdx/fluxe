@@ -10,7 +10,7 @@ const getMessageBody = (message) => {
     return null;
 };
 
-const normalizeYesNo = (text) => {
+const normalizeText = (text) => {
     if (!text) return null;
     return text
         .trim()
@@ -90,17 +90,37 @@ class WhatsAppWebhookController {
             }
 
             const phoneNumber = WhatsAppService.formatPhoneNumber(phoneNumberRaw);
-            const lastOutbound = await this.mensajesRepository.findLastOutboundByPhone(phoneNumber);
 
-            if (!lastOutbound) {
-                console.log('No se encontro mensaje outbound para asociar el inbound:', phoneNumber);
+            const body = getMessageBody(message);
+            const normalized = normalizeText(body);
+
+            if (normalized && normalized.includes('ayuda')) {
+                const baseUrl = process.env.FRONTEND_URL || 'https://fluxe-sepia.vercel.app';
+                const helpMessage = `Hola, en este momento estamos trabajando en tu orden. ` +
+                    `En este link ${baseUrl.replace(/\/+$/, '')}/consulta-orden podrás ver comentarios, ` +
+                    `evidencias y el flujo de cómo va la orden. ` +
+                    `Cualquier actualización que se realice te la enviaremos por este canal.`;
+
+                try {
+                    const result = await WhatsAppService.sendTextMessage(phoneNumber, helpMessage);
+                    if (result.sent) {
+                        console.log('Help message sent to', phoneNumber);
+                    } else {
+                        console.log('Help message not sent:', result.reason || result.error);
+                    }
+                } catch (error) {
+                    console.error('Error sending help message:', error.message);
+                }
+            }
+
+            if (normalized !== 'si' && normalized !== 'no') {
+                console.log('Webhook ignored: inbound is not si/no', body);
                 return res.status(200).send('OK');
             }
 
-            const body = getMessageBody(message);
-            const normalized = normalizeYesNo(body);
-            if (normalized !== 'si' && normalized !== 'no') {
-                console.log('Webhook ignored: inbound is not si/no', body);
+            const lastOutbound = await this.mensajesRepository.findLastOutboundByPhone(phoneNumber);
+            if (!lastOutbound) {
+                console.log('No se encontro mensaje outbound para asociar el inbound:', phoneNumber);
                 return res.status(200).send('OK');
             }
 
