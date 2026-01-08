@@ -293,9 +293,11 @@ class WhatsAppService {
      * Envía directamente como mensaje de texto para evitar problemas con templates
      * @param {Object} cliente - Datos del cliente
      * @param {Object} orden - Datos de la orden
+     * @param {string|null} surveyUrl - URL de encuesta (opcional)
+     * @param {string|null} customMessage - Mensaje personalizado (opcional)
      * @returns {Promise<Object>} - Resultado del envío
      */
-    async notifyOrderCompleted(cliente, orden, surveyUrl = null) {
+    async notifyOrderCompleted(cliente, orden, surveyUrl = null, customMessage = null) {
         if (!this.isConfigured()) {
             console.log('WhatsApp notifications disabled or not configured');
             return { sent: false, reason: 'service_disabled' };
@@ -310,12 +312,16 @@ class WhatsAppService {
             const phoneNumber = this.formatPhoneNumber(cliente.telefono_contacto);
 
             // Enviar directamente como mensaje de texto
-            let mensaje = `¡Excelente noticia ${cliente.nombre_completo}!\n\n` +
-                `Tu orden #${orden.id_orden} ha sido completada.\n\n` +
-                'Gracias por confiar en nosotros.';
+            let mensaje = customMessage;
+            if (!mensaje) {
+                mensaje = `¡Excelente noticia ${cliente.nombre_completo}!\n\n` +
+                    `Tu orden #${orden.id_orden} ha sido completada.\n\n` +
+                    `Gracias por confiar en nosotros.\n\n` +
+                    'Por favor, confirmanos si vas a venir por tu producto. Responde "Si" o "No".';
 
-            if (surveyUrl) {
-                mensaje += `\n\nQueremos conocer tu experiencia. Completa esta encuesta:\n${surveyUrl}`;
+                if (surveyUrl) {
+                    mensaje += `\n\nQueremos conocer tu experiencia. Completa esta encuesta:\n${surveyUrl}`;
+                }
             }
 
             const resultado = await this.sendTextMessage(phoneNumber, mensaje);
