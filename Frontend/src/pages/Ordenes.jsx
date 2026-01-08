@@ -40,7 +40,9 @@ const Ordenes = ({ onVerOrden }) => {
   const [filtros, setFiltros] = useState({
     estado: '',
     cliente: '',
-    fecha: ''
+    fecha: '',
+    cerradas: '', // 'todas', 'cerradas', 'activas'
+    atrasadas: '' // 'todas', 'atrasadas', 'puntuales'
   });
 
   // Estados para lógica de correcciones (Estados por flujo y Evidencias independientes)
@@ -367,7 +369,9 @@ const Ordenes = ({ onVerOrden }) => {
     setFiltros({
       estado: '',
       cliente: '',
-      fecha: ''
+      fecha: '',
+      cerradas: '',
+      atrasadas: ''
     });
   };
 
@@ -510,6 +514,41 @@ const Ordenes = ({ onVerOrden }) => {
     if (filtros.fecha) {
       const fechaOrden = new Date(orden.fecha_creacion).toISOString().split('T')[0];
       cumpleFiltros = cumpleFiltros && fechaOrden === filtros.fecha;
+    }
+
+    // Filtro por órdenes cerradas/activas
+    if (filtros.cerradas) {
+      if (filtros.cerradas === 'cerradas') {
+        cumpleFiltros = cumpleFiltros && orden.fecha_cierre !== null;
+      } else if (filtros.cerradas === 'activas') {
+        cumpleFiltros = cumpleFiltros && orden.fecha_cierre === null;
+      }
+    }
+
+    // Filtro por órdenes atrasadas
+    if (filtros.atrasadas) {
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      
+      if (filtros.atrasadas === 'atrasadas') {
+        // Órdenes con fecha de entrega pasada y que NO estén cerradas
+        if (orden.fecha_estimada_entrega) {
+          const fechaEntrega = new Date(orden.fecha_estimada_entrega);
+          fechaEntrega.setHours(0, 0, 0, 0);
+          cumpleFiltros = cumpleFiltros && fechaEntrega < hoy && orden.fecha_cierre === null;
+        } else {
+          cumpleFiltros = false;
+        }
+      } else if (filtros.atrasadas === 'puntuales') {
+        // Órdenes que aún no están atrasadas O ya están cerradas
+        if (orden.fecha_estimada_entrega) {
+          const fechaEntrega = new Date(orden.fecha_estimada_entrega);
+          fechaEntrega.setHours(0, 0, 0, 0);
+          cumpleFiltros = cumpleFiltros && (fechaEntrega >= hoy || orden.fecha_cierre !== null);
+        } else {
+          cumpleFiltros = cumpleFiltros && orden.fecha_cierre !== null;
+        }
+      }
     }
 
     return cumpleFiltros;
@@ -782,6 +821,34 @@ const Ordenes = ({ onVerOrden }) => {
               value={filtros.fecha}
               onChange={handleFiltroChange}
             />
+          </div>
+
+          <div className="filter-group">
+            <label htmlFor="filter-cerradas">🔒 Estado Cierre</label>
+            <select
+              id="filter-cerradas"
+              name="cerradas"
+              value={filtros.cerradas}
+              onChange={handleFiltroChange}
+            >
+              <option value="">Todas</option>
+              <option value="activas">Órdenes Activas</option>
+              <option value="cerradas">Órdenes Cerradas</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label htmlFor="filter-atrasadas">⏰ Fecha Entrega</label>
+            <select
+              id="filter-atrasadas"
+              name="atrasadas"
+              value={filtros.atrasadas}
+              onChange={handleFiltroChange}
+            >
+              <option value="">Todas</option>
+              <option value="atrasadas">Atrasadas</option>
+              <option value="puntuales">Al día / Cerradas</option>
+            </select>
           </div>
 
           <div className="filter-group">
