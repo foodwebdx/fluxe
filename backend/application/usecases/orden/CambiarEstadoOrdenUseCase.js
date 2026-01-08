@@ -149,6 +149,12 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
                     `Queremos conocer tu experiencia. Completa esta encuesta:\n${encuestaUrl}`;
                 const asunto = `Orden #${orden.id_orden} completada`;
 
+                try {
+                    await this.whatsAppMensajeRepository.deleteByOrden(orden.id_orden);
+                } catch (error) {
+                    console.error('Error limpiando mensajes previos de WhatsApp:', error.message);
+                }
+
                 const [resultadoWhatsApp, resultadoEmail] = await Promise.all([
                     WhatsAppService.notifyOrderCompleted(cliente, orden, encuestaUrl, mensaje),
                     EmailService.sendEmail({
