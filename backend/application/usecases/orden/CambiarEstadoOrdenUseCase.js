@@ -5,6 +5,7 @@ const HistorialEstadoRepository = require('../../../infrastructure/repositories/
 const ClienteRepository = require('../../../infrastructure/repositories/ClienteRepository');
 const WhatsAppService = require('../../../infrastructure/services/WhatsAppService').default;
 const EmailService = require('../../../infrastructure/services/EmailService');
+const WhatsAppMensajeRepository = require('../../../infrastructure/repositories/WhatsAppMensajeRepository');
 
 class CambiarEstadoOrdenUseCase extends IUseCase {
     constructor() {
@@ -13,6 +14,7 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
         this.flujoRepository = new FlujoRepository();
         this.historialRepository = new HistorialEstadoRepository();
         this.clienteRepository = new ClienteRepository();
+        this.whatsAppMensajeRepository = new WhatsAppMensajeRepository();
     }
 
     async execute(idOrden, nuevoEstadoId, usuarioId = 1) {
@@ -136,10 +138,14 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
             if (esUltimoEstado) {
                 const baseUrl = process.env.FRONTEND_URL || 'https://fluxe-sepia.vercel.app';
                 const encuestaUrl = `${baseUrl.replace(/\/+$/, '')}/encuesta-orden?orden=${orden.id_orden}`;
+                const phoneNumber = cliente.telefono_contacto
+                    ? WhatsAppService.formatPhoneNumber(cliente.telefono_contacto)
+                    : null;
 
                 const mensaje = `¡Excelente noticia ${cliente.nombre_completo}!\n\n` +
                     `Tu orden #${orden.id_orden} ha sido completada.\n\n` +
                     `Gracias por confiar en nosotros.\n\n` +
+                    'Por favor, confirmanos si vas a venir por tu producto. Responde "Si" o "No".\n\n' +
                     `Queremos conocer tu experiencia. Completa esta encuesta:\n${encuestaUrl}`;
                 const asunto = `Orden #${orden.id_orden} completada`;
 
@@ -156,6 +162,17 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
 
                 if (resultadoWhatsApp.sent) {
                     console.log(`✅ Notificación de orden completada enviada a ${cliente.nombre_completo} (${cliente.telefono_contacto})`);
+                    if (resultadoWhatsApp.messageId && phoneNumber) {
+                        await this.whatsAppMensajeRepository.create({
+                            id_orden: orden.id_orden,
+                            message_id: resultadoWhatsApp.messageId,
+                            direction: 'outbound',
+                            phone_number: phoneNumber,
+                            conversation_id: null,
+                            message_type: 'text',
+                            body: mensaje
+                        });
+                    }
                 } else {
                     console.log(`⚠️ No se envió notificación de orden completada: ${resultadoWhatsApp.reason || resultadoWhatsApp.error}`);
                 }

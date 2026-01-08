@@ -11,8 +11,8 @@ const app = express();
 // CORS middleware - ACTUALIZADO para produccion
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'https://fluxe-sepia.vercel.app',
-  process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : null,
-  process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : null,
+  process.env.FRONTEND_URL_DEV,
+  process.env.FRONTEND_URL_DEV_ALT
 ].filter(Boolean);
 
 app.use((req, res, next) => {
@@ -31,7 +31,11 @@ app.use((req, res, next) => {
 });
 
 // Middlewares
-app.use(express.json());
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 
