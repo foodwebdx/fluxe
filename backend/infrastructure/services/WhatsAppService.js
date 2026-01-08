@@ -245,7 +245,7 @@ class WhatsAppService {
 
     /**
      * Envía una notificación de orden creada
-     * Intenta usar template y si falla envía un mensaje de texto
+     * Envía directamente como mensaje de texto para evitar problemas con templates
      * @param {Object} cliente - Datos del cliente
      * @param {Object} orden - Datos de la orden
      * @returns {Promise<Object>} - Resultado del envío
@@ -264,52 +264,20 @@ class WhatsAppService {
         try {
             const phoneNumber = this.formatPhoneNumber(cliente.telefono_contacto);
 
-            try {
-                const response = await this.client.messages.sendTemplate({
-                    phoneNumberId: this.phoneNumberId,
-                    to: phoneNumber,
-                    template: {
-                        name: 'orden_creada',
-                        language: { code: 'es_MX' },
-                        components: [
-                            {
-                                type: 'body',
-                                parameters: [
-                                    {
-                                        type: 'text',
-                                        parameterName: 'cliente_nombre',
-                                        text: cliente.nombre_completo
-                                    },
-                                    {
-                                        type: 'text',
-                                        parameterName: 'orden_numero',
-                                        text: `#${orden.id_orden}`
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                });
+            const mensaje = `¡Hola ${cliente.nombre_completo}!\n\n` +
+                `Tu orden #${orden.id_orden} ha sido creada exitosamente.\n\n` +
+                'Te mantendremos informado sobre su progreso.';
 
+            const resultado = await this.sendTextMessage(phoneNumber, mensaje);
+
+            if (resultado.sent) {
                 console.log('WhatsApp order created notification sent successfully:', {
                     to: phoneNumber,
                     orden: orden.id_orden
                 });
-
-                return {
-                    sent: true,
-                    timestamp: new Date(),
-                    messageId: response?.messages?.[0]?.id
-                };
-            } catch (templateError) {
-                console.log('Template not found, sending text message instead');
-
-                const mensaje = `¡Hola ${cliente.nombre_completo}!\n\n` +
-                    `Tu orden #${orden.id_orden} ha sido creada exitosamente.\n\n` +
-                    'Te mantendremos informado sobre su progreso.';
-
-                return await this.sendTextMessage(phoneNumber, mensaje);
             }
+
+            return resultado;
         } catch (error) {
             console.error('Error sending WhatsApp order created notification:', error);
             return {
