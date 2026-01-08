@@ -86,6 +86,29 @@ class WhatsAppMensajeRepository {
         }
     }
 
+    async deleteById(idMensaje) {
+        try {
+            return await this.getPrisma().whatsapp_mensajes.delete({
+                where: { id_mensaje: parseInt(idMensaje) }
+            });
+        } catch (error) {
+            console.error('Error en deleteById:', error);
+            throw error;
+        }
+    }
+
+    async updateMessageId(idMensaje, messageId) {
+        try {
+            return await this.getPrisma().whatsapp_mensajes.update({
+                where: { id_mensaje: parseInt(idMensaje) },
+                data: { message_id: messageId }
+            });
+        } catch (error) {
+            console.error('Error en updateMessageId:', error);
+            throw error;
+        }
+    }
+
     async findFirstInboundByOrdenSince(idOrden, sinceDate) {
         try {
             const where = {

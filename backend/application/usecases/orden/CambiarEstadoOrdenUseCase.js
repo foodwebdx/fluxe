@@ -155,6 +155,20 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
                     console.error('Error limpiando mensajes previos de WhatsApp:', error.message);
                 }
 
+                let outboundRecord = null;
+                if (phoneNumber) {
+                    const tempMessageId = `outbound-${orden.id_orden}-${Date.now()}`;
+                    outboundRecord = await this.whatsAppMensajeRepository.create({
+                        id_orden: orden.id_orden,
+                        message_id: tempMessageId,
+                        direction: 'outbound',
+                        phone_number: phoneNumber,
+                        conversation_id: null,
+                        message_type: 'text',
+                        body: mensaje
+                    });
+                }
+
                 const [resultadoWhatsApp, resultadoEmail] = await Promise.all([
                     WhatsAppService.notifyOrderCompleted(cliente, orden, encuestaUrl, mensaje),
                     EmailService.sendEmail({
@@ -168,23 +182,17 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
 
                 if (resultadoWhatsApp.sent) {
                     console.log(`✅ Notificación de orden completada enviada a ${cliente.nombre_completo} (${cliente.telefono_contacto})`);
-                    if (phoneNumber) {
-                        const messageId = resultadoWhatsApp.messageId || `outbound-${orden.id_orden}-${Date.now()}`;
-                        if (!resultadoWhatsApp.messageId) {
-                            console.log('WhatsApp messageId missing, usando fallback para guardar outbound');
-                        }
-                        await this.whatsAppMensajeRepository.create({
-                            id_orden: orden.id_orden,
-                            message_id: messageId,
-                            direction: 'outbound',
-                            phone_number: phoneNumber,
-                            conversation_id: null,
-                            message_type: 'text',
-                            body: mensaje
-                        });
+                    if (outboundRecord && resultadoWhatsApp.messageId) {
+                        await this.whatsAppMensajeRepository.updateMessageId(
+                            outboundRecord.id_mensaje,
+                            resultadoWhatsApp.messageId
+                        );
                     }
                 } else {
                     console.log(`⚠️ No se envió notificación de orden completada: ${resultadoWhatsApp.reason || resultadoWhatsApp.error}`);
+                    if (outboundRecord) {
+                        await this.whatsAppMensajeRepository.deleteById(outboundRecord.id_mensaje);
+                    }
                 }
 
                 if (resultadoEmail.sent) {
