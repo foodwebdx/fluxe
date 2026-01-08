@@ -111,6 +111,7 @@ model ordenes {
   flujos                  flujos                    @relation(fields: [id_flujo], references: [id_flujo], onDelete: NoAction, onUpdate: NoAction, map: "fk_ordenes_flujo")
   productos               productos                 @relation(fields: [id_producto], references: [id_producto], onUpdate: NoAction, map: "fk_ordenes_producto")
   encuesta                encuesta?
+  whatsapp_mensajes       whatsapp_mensajes[]
 }
 
 model encuesta {
