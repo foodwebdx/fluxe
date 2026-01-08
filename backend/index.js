@@ -10,7 +10,7 @@ const app = express();
 
 // CORS middleware - ACTUALIZADO para produccion
 const allowedOrigins = [
-  process.env.FRONTEND_URL || 'https://fluxe.vercel.app',
+  process.env.FRONTEND_URL || 'https://fluxe-sepia.vercel.app',
   process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : null,
   process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : null,
 ].filter(Boolean);
@@ -119,4 +119,3 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Exportar app para Vercel
 module.exports = app;
-

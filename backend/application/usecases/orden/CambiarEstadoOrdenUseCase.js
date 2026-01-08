@@ -134,7 +134,7 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
 
             // Si es el último estado, usar notificación de orden completada
             if (esUltimoEstado) {
-                const baseUrl = process.env.FRONTEND_URL || 'https://fluxe.vercel.app';
+                const baseUrl = process.env.FRONTEND_URL || 'https://fluxe-sepia.vercel.app';
                 const encuestaUrl = `${baseUrl.replace(/\/+$/, '')}/encuesta-orden?orden=${orden.id_orden}`;
 
                 const mensaje = `¡Excelente noticia ${cliente.nombre_completo}!\n\n` +
