@@ -15,7 +15,7 @@ class GetDashboardMetricsUseCase {
     async execute() {
         try {
             const prisma = this.getPrisma();
-            // Obtener totales principales
+            // Obtener totales principaless
             const [
                 totalOrdenes,
                 totalClientes,
