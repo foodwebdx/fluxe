@@ -1,5 +1,5 @@
 // Interface para repositorios base
-// En JavaScript, las interfaces se representan como clases abstractas o documentación
+// En JavaScript, las interfaces se representan como clases abstractas o documentacion
 
 class IBaseRepository {
   async findById(id) {
