@@ -125,7 +125,9 @@ const OrdenLookup = ({ isPublic = false }) => {
             <div className="filters-container">
                 <form className="filters-grid" onSubmit={handleSearch}>
                     <div className="filter-group">
-                        <label htmlFor="order-search">🔎 Número de orden</label>
+                        <label htmlFor="order-search">
+                            <span className="material-icons">search</span> Número de orden
+                        </label>
                         <input
                             id="order-search"
                             type="text"
@@ -199,9 +201,13 @@ const OrdenLookup = ({ isPublic = false }) => {
                                 className="product-info-header"
                                 onClick={() => setIsClientInfoExpanded(!isClientInfoExpanded)}
                             >
-                                <h2>👤 Información del Cliente</h2>
+                                <h2>
+                                    <span className="material-icons">person</span> Información del Cliente
+                                </h2>
                                 <button className="expand-button">
-                                    {isClientInfoExpanded ? '▼' : '▶'}
+                                    <span className="material-icons">
+                                        {isClientInfoExpanded ? 'expand_more' : 'chevron_right'}
+                                    </span>
                                 </button>
                             </div>
                             {isClientInfoExpanded && (
@@ -273,9 +279,13 @@ const OrdenLookup = ({ isPublic = false }) => {
                                 className="product-info-header"
                                 onClick={() => setIsProductInfoExpanded(!isProductInfoExpanded)}
                             >
-                                <h2>📦 Información del Producto</h2>
+                                <h2>
+                                    <span className="material-icons">inventory</span> Información del Producto
+                                </h2>
                                 <button className="expand-button">
-                                    {isProductInfoExpanded ? '▼' : '▶'}
+                                    <span className="material-icons">
+                                        {isProductInfoExpanded ? 'expand_more' : 'chevron_right'}
+                                    </span>
                                 </button>
                             </div>
                             {isProductInfoExpanded && (
@@ -353,14 +363,16 @@ const OrdenLookup = ({ isPublic = false }) => {
 
                     {evidenciasPublicas.length > 0 && (
                         <div className="all-evidencias-panel">
-                            <h2>📎 Evidencias públicas ({evidenciasPublicas.length})</h2>
+                            <h2>
+                                <span className="material-icons">attach_file</span> Evidencias públicas ({evidenciasPublicas.length})
+                            </h2>
                             <div className="evidencias-grid">
                                 {evidenciasPublicas.map((evidencia) => {
                                     const getFileIcon = (tipo) => {
-                                        if (tipo === 'image') return '🖼️';
-                                        if (tipo === 'pdf') return '📄';
-                                        if (tipo === 'document') return '📝';
-                                        return '📎';
+                                        if (tipo === 'image') return 'image';
+                                        if (tipo === 'pdf') return 'description';
+                                        if (tipo === 'document') return 'description';
+                                        return 'attach_file';
                                     };
 
                                     const handleDownload = () => {
@@ -391,7 +403,7 @@ const OrdenLookup = ({ isPublic = false }) => {
                                                             }}
                                                         />
                                                         <div className="evidencia-icon" style={{ display: 'none' }}>
-                                                            🖼️
+                                                            <span className="material-icons">image</span>
                                                         </div>
                                                     </>
                                                 ) : (
@@ -400,7 +412,9 @@ const OrdenLookup = ({ isPublic = false }) => {
                                                         onClick={handleDownload}
                                                         title={`Descargar ${evidencia.nombre_archivo_original}`}
                                                     >
-                                                        {getFileIcon(evidencia.tipo_evidencia)}
+                                                        <span className="material-icons">
+                                                            {getFileIcon(evidencia.tipo_evidencia)}
+                                                        </span>
                                                     </div>
                                                 )}
                                                 <div className="evidencia-overlay">
@@ -417,7 +431,7 @@ const OrdenLookup = ({ isPublic = false }) => {
                                                     onClick={handleDownload}
                                                     title="Descargar evidencia"
                                                 >
-                                                    ⬇️
+                                                    <span className="material-icons">download</span>
                                                 </button>
                                             </div>
                                         </div>

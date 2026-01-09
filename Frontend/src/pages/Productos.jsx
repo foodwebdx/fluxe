@@ -231,7 +231,9 @@ const Productos = () => {
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon">📦</div>
+          <div className="stat-icon">
+            <span className="material-icons">inventory</span>
+          </div>
           <div className="stat-content">
             <p className="stat-label">Total Productos</p>
             <h3 className="stat-value">{productos.length}</h3>

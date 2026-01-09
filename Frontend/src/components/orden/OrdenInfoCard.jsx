@@ -68,8 +68,8 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
                 throw new Error(data.message || 'Error al actualizar la fecha');
             }
 
-            alert(data.whatsapp?.sent 
-                ? 'Fecha actualizada y notificación enviada por WhatsApp ✅' 
+            alert(data.whatsapp?.sent
+                ? 'Fecha actualizada y notificación enviada por WhatsApp'
                 : 'Fecha actualizada correctamente'
             );
             
@@ -92,28 +92,34 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
 
     return (
         <div className="orden-info-card">
-            <h2>📋 Información de la Orden</h2>
+            <h2>
+                <span className="material-icons">list_alt</span> Información de la Orden
+            </h2>
 
             <div className="info-grid">
                 {/* Cliente */}
                 <div className="info-section">
-                    <div className="info-label">👤 Cliente</div>
+                    <div className="info-label">
+                        <span className="material-icons">person</span> Cliente
+                    </div>
                     <div className="info-value">{orden.cliente?.nombre_completo || 'N/A'}</div>
                     {orden.cliente?.telefono_contacto && (
                         <div style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '0.25rem' }}>
-                            📞 {orden.cliente.telefono_contacto}
+                            <span className="material-icons">phone</span> {orden.cliente.telefono_contacto}
                         </div>
                     )}
                     {orden.cliente?.correo_electronico && (
                         <div style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '0.25rem' }}>
-                            ✉️ {orden.cliente.correo_electronico}
+                            <span className="material-icons">email</span> {orden.cliente.correo_electronico}
                         </div>
                     )}
                 </div>
 
                 {/* Producto */}
                 <div className="info-section">
-                    <div className="info-label">📦 Producto</div>
+                    <div className="info-label">
+                        <span className="material-icons">inventory</span> Producto
+                    </div>
                     <div className="info-value">{orden.producto?.nombre_producto || 'N/A'}</div>
                     {orden.producto?.modelo && (
                         <div style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '0.25rem' }}>
@@ -129,7 +135,9 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
 
                 {/* Flujo */}
                 <div className="info-section">
-                    <div className="info-label">🌊 Flujo de Trabajo</div>
+                    <div className="info-label">
+                        <span className="material-icons">waves</span> Flujo de Trabajo
+                    </div>
                     <div className="info-value">{orden.flujo?.nombre_flujo || orden.flujos?.nombre_flujo || 'N/A'}</div>
                     {(orden.flujo?.descripcion_flujo || orden.flujos?.descripcion_flujo) && (
                         <div style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '0.25rem' }}>
@@ -140,7 +148,9 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
 
                 {/* Estado Actual */}
                 <div className="info-section">
-                    <div className="info-label">📊 Estado Actual</div>
+                    <div className="info-label">
+                        <span className="material-icons">bar_chart</span> Estado Actual
+                    </div>
                     <div className="info-value">
                         {orden.estado_actual?.nombre_estado || orden.estados?.nombre_estado || 'N/A'}
                     </div>
@@ -150,7 +160,9 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
             {/* Descripción del Servicio */}
             {orden.descripcion_servicio && (
                 <div className="info-section" style={{ marginTop: '1.5rem' }}>
-                    <div className="info-label">📝 Descripción del Servicio</div>
+                    <div className="info-label">
+                        <span className="material-icons">description</span> Descripción del Servicio
+                    </div>
                     <div className="info-value" style={{ whiteSpace: 'pre-wrap' }}>
                         {orden.descripcion_servicio}
                     </div>
@@ -160,7 +172,9 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
             {/* Condiciones de Pago */}
             {orden.condiciones_pago && (
                 <div className="info-section">
-                    <div className="info-label">💰 Condiciones de Pago</div>
+                    <div className="info-label">
+                        <span className="material-icons">attach_money</span> Condiciones de Pago
+                    </div>
                     <div className="info-value">{orden.condiciones_pago}</div>
                 </div>
             )}
@@ -168,14 +182,16 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
             <div className="info-grid" style={{ marginTop: '1.5rem' }}>
                 {/* Fecha de Creación */}
                 <div className="info-section">
-                    <div className="info-label">📅 Fecha de Creación</div>
+                    <div className="info-label">
+                        <span className="material-icons">event</span> Fecha de Creación
+                    </div>
                     <div className="info-value">{formatDate(orden.fecha_creacion)}</div>
                 </div>
 
                 {/* Fecha Estimada de Entrega */}
                 <div className="info-section">
                     <div className="info-label">
-                        🎯 Fecha Estimada de Entrega
+                        <span className="material-icons">flag</span> Fecha Estimada de Entrega
                         {!editingFecha && canEditFecha && (
                             <button 
                                 onClick={handleEditFecha}
@@ -183,7 +199,7 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
                                 style={{ marginLeft: '0.5rem', fontSize: '0.875rem' }}
                                 title="Editar fecha de entrega"
                             >
-                                ✏️
+                                <span className="material-icons">edit</span>
                             </button>
                         )}
                     </div>
@@ -202,14 +218,16 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
                                 className="btn-sm btn-primary"
                                 disabled={loading}
                             >
-                                {loading ? '⏳' : '💾'}
+                                <span className="material-icons">
+                                    {loading ? 'hourglass_top' : 'save'}
+                                </span>
                             </button>
                             <button 
                                 onClick={handleCancelEdit}
                                 className="btn-sm btn-secondary"
                                 disabled={loading}
                             >
-                                ✖️
+                                <span className="material-icons">close</span>
                             </button>
                         </div>
                     ) : (
@@ -222,7 +240,9 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
                 {/* Fecha de Cierre - Solo mostrar si está en el último estado */}
                 {orden.fecha_cierre && isInFinalState && (
                     <div className="info-section">
-                        <div className="info-label">✅ Fecha de Cierre</div>
+                        <div className="info-label">
+                            <span className="material-icons">check_circle</span> Fecha de Cierre
+                        </div>
                         <div className="info-value">{formatDate(orden.fecha_cierre)}</div>
                     </div>
                 )}
@@ -230,7 +250,9 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
                 {/* Respuesta del cliente - Solo mostrar si está en el último estado */}
                 {isInFinalState && (
                     <div className="info-section">
-                        <div className="info-label">💬 Respuesta del cliente</div>
+                        <div className="info-label">
+                            <span className="material-icons">chat_bubble</span> Respuesta del cliente
+                        </div>
                         <div className="info-value">{orden.respuesta_cliente_cierre || 'Sin respuesta aun'}</div>
                     </div>
                 )}
@@ -239,7 +261,9 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
             {/* Notas */}
             {orden.notas_orden && (
                 <div className="info-section" style={{ marginTop: '1.5rem' }}>
-                    <div className="info-label">📌 Notas Adicionales</div>
+                    <div className="info-label">
+                        <span className="material-icons">push_pin</span> Notas Adicionales
+                    </div>
                     <div className="info-value" style={{ whiteSpace: 'pre-wrap' }}>
                         {orden.notas_orden}
                     </div>

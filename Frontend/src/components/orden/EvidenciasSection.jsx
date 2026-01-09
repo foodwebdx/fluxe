@@ -113,10 +113,10 @@ const EvidenciasSection = ({
     };
 
     const getFileIcon = (tipo) => {
-        if (tipo === 'image') return '🖼️';
-        if (tipo === 'pdf') return '📄';
-        if (tipo === 'document') return '📝';
-        return '📎';
+        if (tipo === 'image') return 'image';
+        if (tipo === 'pdf') return 'description';
+        if (tipo === 'document') return 'description';
+        return 'attach_file';
     };
 
     const handleDeleteEvidencia = async (id) => {
@@ -211,7 +211,9 @@ const EvidenciasSection = ({
 
     return (
         <div className="evidencias-section">
-            <h4>📎 Evidencias</h4>
+            <h4>
+                <span className="material-icons">attach_file</span> Evidencias
+            </h4>
 
             {/* Lista de evidencias existentes */}
             {localEvidencias && localEvidencias.length > 0 ? (
@@ -232,7 +234,7 @@ const EvidenciasSection = ({
                                             }}
                                         />
                                         <div className="evidencia-icon" style={{ display: 'none' }}>
-                                            🖼️
+                                            <span className="material-icons">image</span>
                                         </div>
                                     </>
                                 ) : (
@@ -241,7 +243,9 @@ const EvidenciasSection = ({
                                         onClick={() => handleDownload(evidencia)}
                                         title={`Descargar ${evidencia.nombre_archivo_original}`}
                                     >
-                                        {getFileIcon(evidencia.tipo_evidencia)}
+                                        <span className="material-icons">
+                                            {getFileIcon(evidencia.tipo_evidencia)}
+                                        </span>
                                     </div>
                                 )}
                                 <div className="evidencia-overlay">
@@ -256,7 +260,7 @@ const EvidenciasSection = ({
                                     onClick={() => handleDownload(evidencia)}
                                     title="Descargar evidencia"
                                 >
-                                    ⬇️
+                                    <span className="material-icons">download</span>
                                 </button>
                                 {showVisibilityToggle && (
                                     <VisibilityToggle
@@ -274,7 +278,7 @@ const EvidenciasSection = ({
                                         title="Eliminar evidencia"
                                         disabled={uploading}
                                     >
-                                        🗑️
+                                        <span className="material-icons">delete</span>
                                     </button>
                                 )}
                             </div>
@@ -298,7 +302,9 @@ const EvidenciasSection = ({
                             onDragLeave={handleDragLeave}
                             onClick={() => document.getElementById('file-input').click()}
                         >
-                            <div className="upload-icon">📎</div>
+                            <div className="upload-icon">
+                                <span className="material-icons">attach_file</span>
+                            </div>
                             <div className="upload-text">
                                 Haz clic o arrastra un archivo aquí
                             </div>
@@ -340,7 +346,7 @@ const EvidenciasSection = ({
                                         justifyContent: 'center',
                                         fontSize: '2rem'
                                     }}>
-                                        📄
+                                        <span className="material-icons">description</span>
                                     </div>
                                 )}
                                 <div style={{ flex: 1 }}>

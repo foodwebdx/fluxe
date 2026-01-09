@@ -237,10 +237,10 @@ const Dashboard = () => {
             </select>
             <div className="export-buttons">
               <button onClick={exportarCSV} className="btn-export" title="Exportar a CSV">
-                📊 Exportar CSV
+                <span className="material-icons">bar_chart</span> Exportar CSV
               </button>
               <button onClick={exportarJSON} className="btn-export" title="Exportar a JSON">
-                📄 Exportar JSON
+                <span className="material-icons">description</span> Exportar JSON
               </button>
             </div>
           </div>
@@ -249,7 +249,9 @@ const Dashboard = () => {
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon">📦</div>
+          <div className="stat-icon">
+            <span className="material-icons">inventory</span>
+          </div>
           <div className="stat-content">
             <p className="stat-label">Órdenes Activas</p>
             <h3 className="stat-value">{metricas.totales.ordenesActivas.toLocaleString()}</h3>
@@ -260,7 +262,9 @@ const Dashboard = () => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">👥</div>
+          <div className="stat-icon">
+            <span className="material-icons">group</span>
+          </div>
           <div className="stat-content">
             <p className="stat-label">Total Clientes</p>
             <h3 className="stat-value">{metricas.totales.clientes.toLocaleString()}</h3>
@@ -271,7 +275,9 @@ const Dashboard = () => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">🏭</div>
+          <div className="stat-icon">
+            <span className="material-icons">business</span>
+          </div>
           <div className="stat-content">
             <p className="stat-label">Productos Registrados</p>
             <h3 className="stat-value">{metricas.totales.productos.toLocaleString()}</h3>
@@ -282,7 +288,9 @@ const Dashboard = () => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">✅</div>
+          <div className="stat-icon">
+            <span className="material-icons">check_circle</span>
+          </div>
           <div className="stat-content">
             <p className="stat-label">Órdenes Cerradas</p>
             <h3 className="stat-value">{metricas.totales.ordenesCerradas.toLocaleString()}</h3>
@@ -300,7 +308,9 @@ const Dashboard = () => {
         <div className="kpis-grid">
           {/* Tiempo Promedio de Finalización */}
           <div className="kpi-card">
-            <h3>⏱️ Tiempo Promedio de Finalización</h3>
+            <h3>
+              <span className="material-icons">timer</span> Tiempo Promedio de Finalización
+            </h3>
             {tiempoPromedio && tiempoPromedio.total_ordenes > 0 ? (
               <>
                 <div className="kpi-summary">
@@ -333,7 +343,9 @@ const Dashboard = () => {
               </>
             ) : (
               <div className="kpi-empty">
-                <p>📭 No hay órdenes cerradas {flujoSeleccionado ? 'para el flujo seleccionado' : 'disponibles'}</p>
+                <p>
+                  <span className="material-icons">mail</span> No hay órdenes cerradas {flujoSeleccionado ? 'para el flujo seleccionado' : 'disponibles'}
+                </p>
                 <small>Las estadísticas aparecerán cuando haya órdenes finalizadas</small>
               </div>
             )}
@@ -341,7 +353,9 @@ const Dashboard = () => {
 
           {/* Satisfacción */}
           <div className="kpi-card">
-            <h3>⭐ Satisfacción del Cliente</h3>
+            <h3>
+              <span className="material-icons">star</span> Satisfacción del Cliente
+            </h3>
             {satisfaccion && satisfaccion.total_encuestas > 0 ? (
               <>
                 <div className="kpi-summary">
@@ -399,7 +413,9 @@ const Dashboard = () => {
               </>
             ) : (
               <div className="kpi-empty">
-                <p>📭 No hay encuestas respondidas {flujoSeleccionado ? 'para el flujo seleccionado' : 'disponibles'}</p>
+                <p>
+                  <span className="material-icons">mail</span> No hay encuestas respondidas {flujoSeleccionado ? 'para el flujo seleccionado' : 'disponibles'}
+                </p>
                 <small>Las estadísticas aparecerán cuando los clientes completen encuestas</small>
               </div>
             )}

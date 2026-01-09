@@ -214,7 +214,9 @@ const Clientes = () => {
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon">👥</div>
+          <div className="stat-icon">
+            <span className="material-icons">group</span>
+          </div>
           <div className="stat-content">
             <p className="stat-label">Total Clientes</p>
             <h3 className="stat-value">{clientes.length}</h3>

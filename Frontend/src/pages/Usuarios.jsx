@@ -343,14 +343,18 @@ const Usuarios = () => {
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon">🧑‍💼</div>
+          <div className="stat-icon">
+            <span className="material-icons">badge</span>
+          </div>
           <div className="stat-content">
             <p className="stat-label">Total Usuarios</p>
             <h3 className="stat-value">{usuarios.length}</h3>
           </div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon">🔐</div>
+          <div className="stat-icon">
+            <span className="material-icons">admin_panel_settings</span>
+          </div>
           <div className="stat-content">
             <p className="stat-label">Roles Disponibles</p>
             <h3 className="stat-value">{roles.length}</h3>

@@ -130,7 +130,9 @@ const BloqueosSection = ({
 
     return (
         <div className="bloqueos-section">
-            <h4>⛔ Bloqueos</h4>
+            <h4>
+                <span className="material-icons">block</span> Bloqueos
+            </h4>
 
             {localBloqueos && localBloqueos.length > 0 ? (
                 <div className="bloqueos-list">

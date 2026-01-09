@@ -153,7 +153,9 @@ const EstadosTimeline = ({
     return (
         <div className="timeline-container">
             <div className="timeline-header">
-                <h2>🔄 Línea de Tiempo del Proceso</h2>
+                <h2>
+                    <span className="material-icons">sync</span> Línea de Tiempo del Proceso
+                </h2>
             </div>
 
             <div className="timeline-wrapper">

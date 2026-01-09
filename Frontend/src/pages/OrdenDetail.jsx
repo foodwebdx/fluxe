@@ -197,10 +197,14 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
             {/* Información del Cliente */}
             {(orden.clientes || orden.cliente) && (
                 <div className="product-info-section">
-                    <div className="product-info-header" onClick={() => setIsClientInfoExpanded(!isClientInfoExpanded)}>
-                        <h2>👤 Información del Cliente</h2>
+                <div className="product-info-header" onClick={() => setIsClientInfoExpanded(!isClientInfoExpanded)}>
+                        <h2>
+                            <span className="material-icons">person</span> Información del Cliente
+                        </h2>
                         <button className="expand-button">
-                            {isClientInfoExpanded ? '▼' : '▶'}
+                            <span className="material-icons">
+                                {isClientInfoExpanded ? 'expand_more' : 'chevron_right'}
+                            </span>
                         </button>
                     </div>
                     {isClientInfoExpanded && (
@@ -253,10 +257,14 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
             {/* Información del Producto */}
             {(orden.producto || orden.productos) && (
                 <div className="product-info-section">
-                    <div className="product-info-header" onClick={() => setIsProductInfoExpanded(!isProductInfoExpanded)}>
-                        <h2>📦 Información del Producto</h2>
+                <div className="product-info-header" onClick={() => setIsProductInfoExpanded(!isProductInfoExpanded)}>
+                        <h2>
+                            <span className="material-icons">inventory</span> Información del Producto
+                        </h2>
                         <button className="expand-button">
-                            {isProductInfoExpanded ? '▼' : '▶'}
+                            <span className="material-icons">
+                                {isProductInfoExpanded ? 'expand_more' : 'chevron_right'}
+                            </span>
                         </button>
                     </div>
                     {isProductInfoExpanded && (
@@ -322,14 +330,16 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
             {/* Panel de todas las evidencias */}
             {evidencias.length > 0 && (
                 <div className="all-evidencias-panel">
-                    <h2>📎 Todas las Evidencias ({evidencias.length})</h2>
+                    <h2>
+                        <span className="material-icons">attach_file</span> Todas las Evidencias ({evidencias.length})
+                    </h2>
                     <div className="evidencias-grid">
                         {evidencias.map((evidencia) => {
                             const getFileIcon = (tipo) => {
-                                if (tipo === 'image') return '🖼️';
-                                if (tipo === 'pdf') return '📄';
-                                if (tipo === 'document') return '📝';
-                                return '📎';
+                                if (tipo === 'image') return 'image';
+                                if (tipo === 'pdf') return 'description';
+                                if (tipo === 'document') return 'description';
+                                return 'attach_file';
                             };
 
                             const handleDownload = () => {
@@ -360,7 +370,7 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
                                                     }}
                                                 />
                                                 <div className="evidencia-icon" style={{ display: 'none' }}>
-                                                    🖼️
+                                                    <span className="material-icons">image</span>
                                                 </div>
                                             </>
                                         ) : (
@@ -369,7 +379,9 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
                                                 onClick={handleDownload}
                                                 title={`Descargar ${evidencia.nombre_archivo_original}`}
                                             >
-                                                {getFileIcon(evidencia.tipo_evidencia)}
+                                                <span className="material-icons">
+                                                    {getFileIcon(evidencia.tipo_evidencia)}
+                                                </span>
                                             </div>
                                         )}
                                         <div className="evidencia-overlay">
@@ -386,7 +398,7 @@ const OrdenDetail = ({ ordenId, onVolver }) => {
                                             onClick={handleDownload}
                                             title="Descargar evidencia"
                                         >
-                                            ⬇️
+                                            <span className="material-icons">download</span>
                                         </button>
                                         <VisibilityToggle
                                             isPublic={getIsPublic(evidencia)}

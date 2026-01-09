@@ -437,7 +437,9 @@ const Flujos = () => {
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon">🌊</div>
+          <div className="stat-icon">
+            <span className="material-icons">waves</span>
+          </div>
           <div className="stat-content">
             <p className="stat-label">Total Flujos</p>
             <h3 className="stat-value">{flujos.length}</h3>
@@ -445,7 +447,9 @@ const Flujos = () => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">✅</div>
+          <div className="stat-icon">
+            <span className="material-icons">check_circle</span>
+          </div>
           <div className="stat-content">
             <p className="stat-label">Flujos Activos</p>
             <h3 className="stat-value">{flujos.filter(f => f.activo).length}</h3>
@@ -491,7 +495,9 @@ const Flujos = () => {
                               transition: 'transform 0.2s'
                             }}
                           >
-                            {expandedFlujo === flujo.id_flujo ? '▼' : '▶'}
+                            <span className="material-icons">
+                              {expandedFlujo === flujo.id_flujo ? 'expand_more' : 'chevron_right'}
+                            </span>
                           </button>
                         </td>
                         <td>#{flujo.id_flujo}</td>
@@ -739,7 +745,7 @@ const Flujos = () => {
                               }}
                               title="Mover arriba"
                             >
-                              ▲
+                              <span className="material-icons">keyboard_arrow_up</span>
                             </button>
                             <button
                               type="button"
@@ -755,7 +761,7 @@ const Flujos = () => {
                               }}
                               title="Mover abajo"
                             >
-                              ▼
+                              <span className="material-icons">keyboard_arrow_down</span>
                             </button>
                             <button
                               type="button"
@@ -770,7 +776,7 @@ const Flujos = () => {
                               }}
                               title="Eliminar"
                             >
-                              ✕
+                              <span className="material-icons">close</span>
                             </button>
                           </div>
                         )}

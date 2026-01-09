@@ -52,10 +52,10 @@ const EstadoModal = ({
     }, [onClose]);
 
     const getFileIcon = (tipo) => {
-        if (tipo === 'image') return '🖼️';
-        if (tipo === 'pdf') return '📄';
-        if (tipo === 'document') return '📝';
-        return '📎';
+        if (tipo === 'image') return 'image';
+        if (tipo === 'pdf') return 'description';
+        if (tipo === 'document') return 'description';
+        return 'attach_file';
     };
 
     const handleDownload = (evidencia) => {
@@ -121,7 +121,9 @@ const EstadoModal = ({
         <div className="estado-modal-overlay" onClick={onClose}>
             <div className="estado-modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="estado-modal-header">
-                    <h3>📊 {getNombreEstado()}</h3>
+                    <h3>
+                        <span className="material-icons">bar_chart</span> {getNombreEstado()}
+                    </h3>
                     <button className="modal-close" onClick={onClose}>
                         ×
                     </button>
@@ -174,7 +176,9 @@ const EstadoModal = ({
 
                 {/* Evidencias (solo lectura) */}
                 <div className="evidencias-section" style={{ marginTop: '1.5rem' }}>
-                    <h4>📎 Evidencias</h4>
+                    <h4>
+                        <span className="material-icons">attach_file</span> Evidencias
+                    </h4>
                     {localEvidencias && localEvidencias.length > 0 ? (
                         <div className="evidencias-grid">
                             {localEvidencias.map((evidencia) => (
@@ -193,7 +197,7 @@ const EstadoModal = ({
                                                     }}
                                                 />
                                                 <div className="evidencia-icon" style={{ display: 'none' }}>
-                                                    🖼️
+                                                    <span className="material-icons">image</span>
                                                 </div>
                                             </>
                                         ) : (
@@ -202,7 +206,9 @@ const EstadoModal = ({
                                                 onClick={() => handleDownload(evidencia)}
                                                 title={`Descargar ${evidencia.nombre_archivo_original}`}
                                             >
-                                                {getFileIcon(evidencia.tipo_evidencia)}
+                                                <span className="material-icons">
+                                                    {getFileIcon(evidencia.tipo_evidencia)}
+                                                </span>
                                             </div>
                                         )}
                                         <div className="evidencia-overlay">
@@ -216,7 +222,7 @@ const EstadoModal = ({
                                             onClick={() => handleDownload(evidencia)}
                                             title="Descargar evidencia"
                                         >
-                                            ⬇️
+                                            <span className="material-icons">download</span>
                                         </button>
                                         {showVisibilityToggle && (
                                             <VisibilityToggle

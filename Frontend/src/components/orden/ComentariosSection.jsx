@@ -205,7 +205,9 @@ const ComentariosSection = ({
 
     return (
         <div className="comentarios-section">
-            <h4>💬 Comentarios</h4>
+            <h4>
+                <span className="material-icons">chat_bubble</span> Comentarios
+            </h4>
 
             {/* Lista de comentarios existentes */}
             {localComentarios && localComentarios.length > 0 ? (
@@ -239,7 +241,11 @@ const ComentariosSection = ({
                                             onClick={() => handleSaveEdit(comentario.id_comentario)}
                                             disabled={submitting || !editingText.trim()}
                                         >
-                                            {submitting ? 'Guardando...' : '✓ Guardar'}
+                                            {submitting ? 'Guardando...' : (
+                                                <>
+                                                    <span className="material-icons">save</span> Guardar
+                                                </>
+                                            )}
                                         </button>
                                         <button
                                             type="button"
@@ -247,7 +253,7 @@ const ComentariosSection = ({
                                             onClick={handleCancelEdit}
                                             disabled={submitting}
                                         >
-                                            ✕ Cancelar
+                                            <span className="material-icons">close</span> Cancelar
                                         </button>
                                     </div>
                                 </div>
@@ -276,7 +282,7 @@ const ComentariosSection = ({
                                                         title="Editar comentario"
                                                         disabled={submitting}
                                                     >
-                                                        ✏️
+                                                        <span className="material-icons">edit</span>
                                                     </button>
                                                     <button
                                                         type="button"
@@ -285,7 +291,7 @@ const ComentariosSection = ({
                                                         title="Eliminar comentario"
                                                         disabled={submitting}
                                                     >
-                                                        🗑️
+                                                        <span className="material-icons">delete</span>
                                                     </button>
                                                 </>
                                             )}

@@ -144,7 +144,9 @@ const Estados = () => {
         return (
             <div className="dashboard">
                 <div className="dashboard-header">
-                    <h1>⚙️ Configuración de Estados</h1>
+                    <h1>
+                        <span className="material-icons">settings</span> Configuración de Estados
+                    </h1>
                     <p className="subtitle">Cargando estados...</p>
                 </div>
             </div>
@@ -155,7 +157,9 @@ const Estados = () => {
         return (
             <div className="dashboard">
                 <div className="dashboard-header">
-                    <h1>⚙️ Configuración de Estados</h1>
+                    <h1>
+                        <span className="material-icons">settings</span> Configuración de Estados
+                    </h1>
                     <p className="subtitle" style={{ color: '#ef4444' }}>Error: {error}</p>
                 </div>
             </div>
@@ -167,7 +171,9 @@ const Estados = () => {
             <div className="dashboard-header">
                 <div className="header-content">
                     <div>
-                        <h1>⚙️ Configuración de Estados</h1>
+                        <h1>
+                            <span className="material-icons">settings</span> Configuración de Estados
+                        </h1>
                         <p className="subtitle">Gestión de estados del sistema</p>
                     </div>
                     <button className="btn-add" onClick={handleNew}>
@@ -179,7 +185,9 @@ const Estados = () => {
 
             <div className="stats-grid">
                 <div className="stat-card">
-                    <div className="stat-icon">⚙️</div>
+                    <div className="stat-icon">
+                        <span className="material-icons">settings</span>
+                    </div>
                     <div className="stat-content">
                         <p className="stat-label">Total Estados</p>
                         <h3 className="stat-value">{estados.length}</h3>
@@ -245,7 +253,12 @@ const Estados = () => {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h2>{modalMode === 'create' ? '➕ Nuevo Estado' : '✏️ Editar Estado'}</h2>
+                            <h2>
+                                <span className="material-icons">
+                                    {modalMode === 'create' ? 'add' : 'edit'}
+                                </span>{' '}
+                                {modalMode === 'create' ? 'Nuevo Estado' : 'Editar Estado'}
+                            </h2>
                             <button className="modal-close" onClick={handleCloseModal}>×</button>
                         </div>
 

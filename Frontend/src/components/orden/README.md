@@ -1,10 +1,10 @@
 # Componentes de Vista Detallada de Orden
 
-## 📋 Descripción
+## Descripción
 
 Este módulo implementa una vista detallada de órdenes con línea de tiempo interactiva que muestra el historial de estados, permitiendo gestionar comentarios y evidencias por cada estado.
 
-## 🧩 Componentes
+## Componentes
 
 ### 1. OrdenDetail.jsx (Página Principal)
 **Ubicación:** `Frontend/src/pages/OrdenDetail.jsx`
@@ -129,7 +129,7 @@ Este módulo implementa una vista detallada de órdenes con línea de tiempo int
 - Cierra con tecla ESC
 - Previene scroll del body cuando está abierto
 
-## 🔄 Flujos de Uso
+## Flujos de Uso
 
 ### Ver Detalle de Orden
 1. Usuario hace click en "Ver" en la lista de órdenes
@@ -165,7 +165,7 @@ Este módulo implementa una vista detallada de órdenes con línea de tiempo int
 5. Se recargan todos los datos
 6. La línea de tiempo se actualiza automáticamente
 
-## 🎨 Estilos
+## Estilos
 
 Todos los estilos están en `OrdenDetail.css` con:
 - Variables CSS para colores de estados
@@ -174,7 +174,7 @@ Todos los estilos están en `OrdenDetail.css` con:
 - Responsive design para móviles
 - Drag & drop visual feedback
 
-## 🔗 Integración con Backend
+## Integración con Backend
 
 ### Endpoints Utilizados
 
@@ -233,7 +233,7 @@ POST   /api/evidencias
 }]
 ```
 
-## 📝 Notas Importantes
+## Notas Importantes
 
 ### Sobre historial_estados_orden
 - Cada registro representa un momento cuando la orden cambió de estado
@@ -255,7 +255,7 @@ POST   /api/evidencias
 - [ ] Implementar lightbox para ver imágenes en grande
 - [ ] Agregar filtros en el panel de evidencias
 
-## 🚀 Uso
+## Uso
 
 ```jsx
 // En App.jsx
@@ -267,14 +267,14 @@ import OrdenDetail from './pages/OrdenDetail';
 />
 ```
 
-## 🎯 Criterios de Éxito
+## Criterios de Éxito
 
-✅ Usuario puede navegar a detalle de orden  
-✅ Se muestra información completa de la orden  
-✅ Línea de tiempo refleja estados correctamente  
-✅ Usuario puede agregar comentarios al estado actual  
-✅ Usuario puede subir evidencias al estado actual  
-✅ Usuario puede ver comentarios/evidencias de estados previos  
-✅ Usuario puede avanzar al siguiente estado  
-✅ Sistema valida transiciones de estado  
-✅ Datos se actualizan automáticamente
+Usuario puede navegar a detalle de orden  
+Se muestra información completa de la orden  
+Línea de tiempo refleja estados correctamente  
+Usuario puede agregar comentarios al estado actual  
+Usuario puede subir evidencias al estado actual  
+Usuario puede ver comentarios/evidencias de estados previos  
+Usuario puede avanzar al siguiente estado  
+Sistema valida transiciones de estado  
+Datos se actualizan automáticamente

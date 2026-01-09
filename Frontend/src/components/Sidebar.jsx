@@ -2,15 +2,15 @@ import './Sidebar.css';
 
 const Sidebar = ({ activeView, setActiveView, user, onLogout, allowedViews }) => {
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'ordenes', label: 'Ordenes', icon: '📦' },
-    { id: 'consulta-orden', label: 'Consulta', icon: '🔍' },
-    { id: 'encuesta-orden', label: 'Encuesta', icon: '📝' },
-    { id: 'clientes', label: 'Clientes', icon: '👥' },
-    { id: 'productos', label: 'Productos', icon: '📦' },
-    { id: 'flujos', label: 'Flujos', icon: '🌊' },
-    { id: 'estados', label: 'Estados', icon: '⚙️' },
-    { id: 'usuarios', label: 'Usuarios', icon: '🧑‍💼' },
+    { id: 'dashboard', label: 'Dashboard', icon: 'bar_chart' },
+    { id: 'ordenes', label: 'Ordenes', icon: 'inventory' },
+    { id: 'consulta-orden', label: 'Consulta', icon: 'search' },
+    { id: 'encuesta-orden', label: 'Encuesta', icon: 'assignment' },
+    { id: 'clientes', label: 'Clientes', icon: 'group' },
+    { id: 'productos', label: 'Productos', icon: 'inventory' },
+    { id: 'flujos', label: 'Flujos', icon: 'waves' },
+    { id: 'estados', label: 'Estados', icon: 'settings' },
+    { id: 'usuarios', label: 'Usuarios', icon: 'badge' },
   ];
 
   const visibleItems = Array.isArray(allowedViews) && allowedViews.length > 0
@@ -35,7 +35,9 @@ const Sidebar = ({ activeView, setActiveView, user, onLogout, allowedViews }) =>
             className={`nav-item ${activeView === item.id ? 'active' : ''}`}
             onClick={() => setActiveView(item.id)}
           >
-            <span className="icon">{item.icon}</span>
+            <span className="icon">
+              <span className="material-icons">{item.icon}</span>
+            </span>
             <span>{item.label}</span>
           </button>
         ))}

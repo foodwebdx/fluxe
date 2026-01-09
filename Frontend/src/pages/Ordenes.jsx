@@ -779,7 +779,9 @@ const Ordenes = ({ onVerOrden }) => {
       <div className="filters-container">
         <div className="filters-grid">
           <div className="filter-group">
-            <label htmlFor="filter-estado">📊 Estado</label>
+            <label htmlFor="filter-estado">
+              <span className="material-icons">bar_chart</span> Estado
+            </label>
             <select
               id="filter-estado"
               name="estado"
@@ -796,7 +798,9 @@ const Ordenes = ({ onVerOrden }) => {
           </div>
 
           <div className="filter-group">
-            <label htmlFor="filter-cliente">👥 Cliente</label>
+            <label htmlFor="filter-cliente">
+              <span className="material-icons">group</span> Cliente
+            </label>
             <select
               id="filter-cliente"
               name="cliente"
@@ -813,7 +817,9 @@ const Ordenes = ({ onVerOrden }) => {
           </div>
 
           <div className="filter-group">
-            <label htmlFor="filter-fecha">📅 Fecha</label>
+            <label htmlFor="filter-fecha">
+              <span className="material-icons">event</span> Fecha
+            </label>
             <input
               type="date"
               id="filter-fecha"
@@ -824,7 +830,9 @@ const Ordenes = ({ onVerOrden }) => {
           </div>
 
           <div className="filter-group">
-            <label htmlFor="filter-cerradas">🔒 Estado Cierre</label>
+            <label htmlFor="filter-cerradas">
+              <span className="material-icons">lock</span> Estado Cierre
+            </label>
             <select
               id="filter-cerradas"
               name="cerradas"
@@ -838,7 +846,9 @@ const Ordenes = ({ onVerOrden }) => {
           </div>
 
           <div className="filter-group">
-            <label htmlFor="filter-atrasadas">⏰ Fecha Entrega</label>
+            <label htmlFor="filter-atrasadas">
+              <span className="material-icons">schedule</span> Fecha Entrega
+            </label>
             <select
               id="filter-atrasadas"
               name="atrasadas"
@@ -862,7 +872,9 @@ const Ordenes = ({ onVerOrden }) => {
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon">📦</div>
+          <div className="stat-icon">
+            <span className="material-icons">inventory</span>
+          </div>
           <div className="stat-content">
             <p className="stat-label">Total Órdenes</p>
             <h3 className="stat-value">{ordenesFiltradas.length}</h3>
@@ -870,7 +882,9 @@ const Ordenes = ({ onVerOrden }) => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">✅</div>
+          <div className="stat-icon">
+            <span className="material-icons">check_circle</span>
+          </div>
           <div className="stat-content">
             <p className="stat-label">Completadas</p>
             <h3 className="stat-value">
@@ -882,7 +896,9 @@ const Ordenes = ({ onVerOrden }) => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">⏰</div>
+          <div className="stat-icon">
+            <span className="material-icons">schedule</span>
+          </div>
           <div className="stat-content">
             <p className="stat-label">Pendientes</p>
             <h3 className="stat-value">
@@ -894,7 +910,9 @@ const Ordenes = ({ onVerOrden }) => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">⏳</div>
+          <div className="stat-icon">
+            <span className="material-icons">hourglass_empty</span>
+          </div>
           <div className="stat-content">
             <p className="stat-label">En Proceso</p>
             <h3 className="stat-value">
@@ -1290,7 +1308,7 @@ const Ordenes = ({ onVerOrden }) => {
                       <div className="form-group">
                         <label>Estado Inicial</label>
                         <div style={{ padding: '0.75rem', background: '#f0f4ff', borderRadius: '6px', color: '#667eea', fontSize: '0.875rem' }}>
-                          ℹ️ El estado inicial será asignado automáticamente al crear la orden
+                          <span className="material-icons">info</span> El estado inicial será asignado automáticamente al crear la orden
                         </div>
                       </div>
                     )}
@@ -1367,7 +1385,7 @@ const Ordenes = ({ onVerOrden }) => {
                           fontWeight: '600',
                           color: '#374151'
                         }}>
-                          📋 Historial de Evidencias
+                          <span className="material-icons">list_alt</span> Historial de Evidencias
                         </h3>
 
                         {evidenceMode === 'list' && (
@@ -1482,7 +1500,7 @@ const Ordenes = ({ onVerOrden }) => {
                                       onClick={() => handleEditEvidenciaClick(evidencia)}
                                       title="Editar evidencia"
                                     >
-                                      ✏️
+                                      <span className="material-icons">edit</span>
                                     </button>
                                     <button
                                       type="button"
@@ -1491,7 +1509,7 @@ const Ordenes = ({ onVerOrden }) => {
                                       onClick={() => handleDeleteEvidencia(evidencia.id_evidencia)}
                                       title="Eliminar evidencia"
                                     >
-                                      🗑️
+                                      <span className="material-icons">delete</span>
                                     </button>
                                   </div>
                                 </div>
@@ -1510,7 +1528,7 @@ const Ordenes = ({ onVerOrden }) => {
                                     color: '#374151',
                                     lineHeight: '1.5'
                                   }}>
-                                    💬 {evidencia.comentario}
+                                    <span className="material-icons">chat_bubble</span> {evidencia.comentario}
                                   </p>
                                 </div>
                               )}
@@ -1537,7 +1555,7 @@ const Ordenes = ({ onVerOrden }) => {
                                         justifyContent: 'center',
                                         fontSize: '1.5rem'
                                       }}>
-                                        🖼️
+                                        <span className="material-icons">image</span>
                                       </div>
                                       <div style={{ flex: 1 }}>
                                         <p style={{
@@ -1569,7 +1587,7 @@ const Ordenes = ({ onVerOrden }) => {
                                         justifyContent: 'center',
                                         fontSize: '1.5rem'
                                       }}>
-                                        📄
+                                        <span className="material-icons">description</span>
                                       </div>
                                       <div style={{ flex: 1 }}>
                                         <p style={{
@@ -1604,7 +1622,7 @@ const Ordenes = ({ onVerOrden }) => {
                                     fontSize: '0.8rem',
                                     color: '#6b7280'
                                   }}>
-                                    👤 Subido por: <strong>{evidencia.usuarios.nombre}</strong>
+                                    <span className="material-icons">person</span> Subido por: <strong>{evidencia.usuarios.nombre}</strong>
                                   </p>
                                 </div>
                               )}
@@ -1642,13 +1660,13 @@ const Ordenes = ({ onVerOrden }) => {
 
                         {siguienteEstado && (
                           <option value={siguienteEstado.id_estado}>
-                            ➡️ Avanzar a: {siguienteEstado.nombre_estado}
+                            Avanzar a: {siguienteEstado.nombre_estado}
                           </option>
                         )}
 
                         {estadoAnterior && (
                           <option value={estadoAnterior.id_estado}>
-                            ⬅️ Retroceder a: {estadoAnterior.nombre_estado}
+                            Retroceder a: {estadoAnterior.nombre_estado}
                           </option>
                         )}
                       </select>
@@ -1718,7 +1736,9 @@ const Ordenes = ({ onVerOrden }) => {
                         }}
                         onClick={() => document.getElementById('evidencia_archivo').click()}
                       >
-                        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>📎</div>
+                        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>
+                          <span className="material-icons">attach_file</span>
+                        </div>
                         <p style={{ margin: 0, color: '#6b7280' }}>
                           Haz clic o arrastra un archivo aquí
                         </p>
@@ -1757,7 +1777,7 @@ const Ordenes = ({ onVerOrden }) => {
                             justifyContent: 'center',
                             fontSize: '2rem'
                           }}>
-                            📄
+                            <span className="material-icons">description</span>
                           </div>
                         )}
                         <div style={{ flex: 1 }}>

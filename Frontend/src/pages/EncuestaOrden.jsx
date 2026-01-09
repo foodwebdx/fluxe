@@ -231,7 +231,9 @@ const EncuestaOrden = ({ isPublic = false }) => {
                 <div className="filters-container">
                     <form className="filters-grid" onSubmit={handleSearch}>
                         <div className="filter-group">
-                            <label htmlFor="order-search">🔎 Número de orden</label>
+                            <label htmlFor="order-search">
+                                <span className="material-icons">search</span> Número de orden
+                            </label>
                             <input
                                 id="order-search"
                                 type="text"
@@ -296,9 +298,13 @@ const EncuestaOrden = ({ isPublic = false }) => {
                                 className="product-info-header"
                                 onClick={() => setIsClientInfoExpanded(!isClientInfoExpanded)}
                             >
-                                <h2>👤 Información del Cliente</h2>
+                                <h2>
+                                    <span className="material-icons">person</span> Información del Cliente
+                                </h2>
                                 <button className="expand-button">
-                                    {isClientInfoExpanded ? '▼' : '▶'}
+                                    <span className="material-icons">
+                                        {isClientInfoExpanded ? 'expand_more' : 'chevron_right'}
+                                    </span>
                                 </button>
                             </div>
                             {isClientInfoExpanded && (
@@ -370,9 +376,13 @@ const EncuestaOrden = ({ isPublic = false }) => {
                                 className="product-info-header"
                                 onClick={() => setIsProductInfoExpanded(!isProductInfoExpanded)}
                             >
-                                <h2>📦 Información del Producto</h2>
+                                <h2>
+                                    <span className="material-icons">inventory</span> Información del Producto
+                                </h2>
                                 <button className="expand-button">
-                                    {isProductInfoExpanded ? '▼' : '▶'}
+                                    <span className="material-icons">
+                                        {isProductInfoExpanded ? 'expand_more' : 'chevron_right'}
+                                    </span>
                                 </button>
                             </div>
                             {isProductInfoExpanded && (
