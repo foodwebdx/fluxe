@@ -7,7 +7,7 @@ class EstadoRepository extends IEstadoRepository {
         super();
     }
 
-    // Obtener el cliente Prisma
+    // Obtener el cliente Prism
     getPrisma() {
         const prisma = getPrisma();
         if (!prisma) {
