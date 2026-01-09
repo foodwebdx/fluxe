@@ -336,14 +336,17 @@ class WhatsAppService {
                 mensaje = `¡Excelente noticia ${cliente.nombre_completo}!\n\n` +
                     `Tu orden #${orden.id_orden} ha sido completada.\n\n` +
                     `Gracias por confiar en nosotros.\n\n` +
-                    'Por favor, confirmanos si vas a venir por tu producto. Responde "Si" o "No".';
+                    'Por favor, confirmanos si vas a venir por tu producto. Selecciona "Si" o "No".';
 
                 if (surveyUrl) {
                     mensaje += `\n\nQueremos conocer tu experiencia. Completa esta encuesta:\n${surveyUrl}`;
                 }
             }
 
-            const resultado = await this.sendTextMessage(phoneNumber, mensaje);
+            const resultado = await this.sendInteractiveButtons(phoneNumber, mensaje, [
+                { id: 'btn_si', title: 'Si' },
+                { id: 'btn_no', title: 'No' }
+            ]);
 
             if (resultado.sent) {
                 console.log('WhatsApp order completed notification sent successfully:', {
@@ -396,6 +399,48 @@ class WhatsAppService {
             };
         } catch (error) {
             console.error('Error sending WhatsApp text message:', error);
+            return {
+                sent: false,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Envía un mensaje con botones interactivos
+     * @param {string} to - Número de teléfono destino
+     * @param {string} bodyText - Texto del mensaje
+     * @param {Array} buttons - Botones { id, title }
+     * @returns {Promise<Object>} - Resultado del envío
+     */
+    async sendInteractiveButtons(to, bodyText, buttons = []) {
+        if (!this.isConfigured()) {
+            return { sent: false, reason: 'service_disabled' };
+        }
+
+        try {
+            const phoneNumber = this.formatPhoneNumber(to);
+            const messageBody = this._appendHelpFooter(bodyText);
+
+            const response = await this.client.messages.sendInteractiveButtons({
+                phoneNumberId: this.phoneNumberId,
+                to: phoneNumber,
+                bodyText: messageBody,
+                buttons
+            });
+
+            const messageId = this._extractMessageId(response);
+            if (!messageId) {
+                console.log('WhatsApp sendInteractiveButtons without messageId');
+            }
+
+            return {
+                sent: true,
+                timestamp: new Date(),
+                messageId
+            };
+        } catch (error) {
+            console.error('Error sending WhatsApp interactive buttons:', error);
             return {
                 sent: false,
                 error: error.message

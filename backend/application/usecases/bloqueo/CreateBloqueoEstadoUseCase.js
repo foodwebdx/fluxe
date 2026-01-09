@@ -41,7 +41,7 @@ class CreateBloqueoEstadoUseCase extends IUseCase {
                         const phoneNumber = WhatsAppService.formatPhoneNumber(cliente.telefono_contacto);
                         const mensaje = `Tu orden #${ordenId} tiene un bloqueo.\n\n` +
                             `Motivo: ${nuevoBloqueo.descripcion_bloqueo}\n\n` +
-                            'Cuando este resuelto responde "Si". Si aun no, responde "No".';
+                            'Confirmanos si el bloqueo ya se resolvio. Selecciona "Si" o "No".';
 
                         const tempMessageId = `bloqueo-${nuevoBloqueo.id_bloqueo}-${Date.now()}`;
                         const outboundRecord = await this.whatsAppMensajeRepository.create({
@@ -50,11 +50,14 @@ class CreateBloqueoEstadoUseCase extends IUseCase {
                             direction: 'outbound',
                             phone_number: phoneNumber,
                             conversation_id: `bloqueo:${nuevoBloqueo.id_bloqueo}`,
-                            message_type: 'text',
+                            message_type: 'interactive',
                             body: mensaje
                         });
 
-                        const result = await WhatsAppService.sendTextMessage(phoneNumber, mensaje);
+                        const result = await WhatsAppService.sendInteractiveButtons(phoneNumber, mensaje, [
+                            { id: 'btn_si', title: 'Si' },
+                            { id: 'btn_no', title: 'No' }
+                        ]);
                         if (result.sent) {
                             if (result.messageId) {
                                 await this.whatsAppMensajeRepository.updateMessageId(

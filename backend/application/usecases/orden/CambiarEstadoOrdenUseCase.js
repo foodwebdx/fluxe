@@ -155,7 +155,7 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
                 const mensaje = `¡Excelente noticia ${cliente.nombre_completo}!\n\n` +
                     `Tu orden #${orden.id_orden} ha sido completada.\n\n` +
                     `Gracias por confiar en nosotros.\n\n` +
-                    'Por favor, confirmanos si vas a venir por tu producto. Responde "Si" o "No".\n\n' +
+                    'Por favor, confirmanos si vas a venir por tu producto. Selecciona "Si" o "No".\n\n' +
                     `Queremos conocer tu experiencia. Completa esta encuesta:\n${encuestaUrl}`;
                 const asunto = `Orden #${orden.id_orden} completada`;
 
@@ -174,7 +174,7 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
                         direction: 'outbound',
                         phone_number: phoneNumber,
                         conversation_id: null,
-                        message_type: 'text',
+                        message_type: 'interactive',
                         body: mensaje
                     });
                 }
