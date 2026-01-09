@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const WhatsAppMensajeRepository = require('../../infrastructure/repositories/WhatsAppMensajeRepository');
 const WhatsAppService = require('../../infrastructure/services/WhatsAppService').default;
+const BloqueoEstadoRepository = require('../../infrastructure/repositories/BloqueoEstadoRepository');
 
 const getMessageBody = (message) => {
     if (message?.kapso?.content) return message.kapso.content;
@@ -40,6 +41,7 @@ const verifyWebhookSignature = (rawBody, signature, secret) => {
 class WhatsAppWebhookController {
     constructor() {
         this.mensajesRepository = new WhatsAppMensajeRepository();
+        this.bloqueoRepository = new BloqueoEstadoRepository();
     }
 
     getEvent(req, payload) {
@@ -115,6 +117,59 @@ class WhatsAppWebhookController {
 
             if (normalized !== 'si' && normalized !== 'no') {
                 console.log('Webhook ignored: inbound is not si/no', body);
+                return res.status(200).send('OK');
+            }
+
+            const bloqueoOutbound = await this.mensajesRepository.findLastOutboundByPhoneAndContextPrefix(
+                phoneNumber,
+                'bloqueo:'
+            );
+            if (bloqueoOutbound?.conversation_id) {
+                const bloqueoId = parseInt(bloqueoOutbound.conversation_id.split(':')[1], 10);
+                if (!Number.isNaN(bloqueoId)) {
+                    const bloqueo = await this.bloqueoRepository.findById(bloqueoId);
+                    if (!bloqueo) {
+                        console.log('Bloqueo no encontrado para respuesta inbound:', bloqueoId);
+                        return res.status(200).send('OK');
+                    }
+
+                    const existingInbound = await this.mensajesRepository.findFirstInboundByContext(
+                        `bloqueo:${bloqueoId}`
+                    );
+                    if (existingInbound) {
+                        console.log('Webhook ignored: inbound already stored for bloqueo', bloqueoId);
+                        return res.status(200).send('OK');
+                    }
+
+                    if (normalized === 'si') {
+                        await this.bloqueoRepository.update(bloqueoId, { estado_bloqueado: false });
+                    }
+
+                    const createdAt = message.timestamp
+                        ? new Date(parseInt(message.timestamp, 10) * 1000)
+                        : new Date();
+
+                    await this.mensajesRepository.create({
+                        id_orden: bloqueo.historial_estados_orden?.id_orden || bloqueo.id_orden,
+                        message_id: message.id,
+                        direction: 'inbound',
+                        phone_number: phoneNumber,
+                        conversation_id: `bloqueo:${bloqueoId}`,
+                        message_type: message.type || 'unknown',
+                        body,
+                        created_at: createdAt
+                    });
+
+                    console.log('Webhook stored bloqueo response', {
+                        id_bloqueo: bloqueoId,
+                        message_id: message.id,
+                        body,
+                        estado_bloqueado: normalized !== 'si'
+                    });
+                    return res.status(200).send('OK');
+                }
+
+                console.log('Webhook ignored: bloqueo context invalid', bloqueoOutbound.conversation_id);
                 return res.status(200).send('OK');
             }
 
