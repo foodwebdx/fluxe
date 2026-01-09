@@ -32,14 +32,20 @@ class BloqueoEstadoRepository {
     async create(bloqueoData) {
         try {
             const normalizedEstado = normalizeBoolean(bloqueoData.estado_bloqueado);
+            const data = {
+                id_historial: parseInt(bloqueoData.id_historial),
+                id_usuario: parseInt(bloqueoData.id_usuario),
+                descripcion_bloqueo: bloqueoData.descripcion_bloqueo,
+                ...(normalizedEstado !== undefined ? { estado_bloqueado: normalizedEstado } : {}),
+                fecha_hora_bloqueo: bloqueoData.fecha_hora_bloqueo || new Date()
+            };
+
+            if (Object.prototype.hasOwnProperty.call(bloqueoData, 'respuesta_cliente')) {
+                data.respuesta_cliente = bloqueoData.respuesta_cliente;
+            }
+
             const nuevoBloqueo = await this.getPrisma().bloqueos_estado.create({
-                data: {
-                    id_historial: parseInt(bloqueoData.id_historial),
-                    id_usuario: parseInt(bloqueoData.id_usuario),
-                    descripcion_bloqueo: bloqueoData.descripcion_bloqueo,
-                    ...(normalizedEstado !== undefined ? { estado_bloqueado: normalizedEstado } : {}),
-                    fecha_hora_bloqueo: bloqueoData.fecha_hora_bloqueo || new Date()
-                },
+                data,
                 include: {
                     historial_estados_orden: {
                         select: {
@@ -221,12 +227,18 @@ class BloqueoEstadoRepository {
     async update(id, bloqueoData) {
         try {
             const normalizedEstado = normalizeBoolean(bloqueoData.estado_bloqueado);
+            const data = {
+                descripcion_bloqueo: bloqueoData.descripcion_bloqueo || undefined,
+                estado_bloqueado: normalizedEstado !== undefined ? normalizedEstado : undefined
+            };
+
+            if (Object.prototype.hasOwnProperty.call(bloqueoData, 'respuesta_cliente')) {
+                data.respuesta_cliente = bloqueoData.respuesta_cliente;
+            }
+
             const bloqueoActualizado = await this.getPrisma().bloqueos_estado.update({
                 where: { id_bloqueo: parseInt(id) },
-                data: {
-                    descripcion_bloqueo: bloqueoData.descripcion_bloqueo || undefined,
-                    estado_bloqueado: normalizedEstado !== undefined ? normalizedEstado : undefined
-                },
+                data,
                 include: {
                     historial_estados_orden: {
                         select: {

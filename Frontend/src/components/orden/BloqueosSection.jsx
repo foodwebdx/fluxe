@@ -145,6 +145,9 @@ const BloqueosSection = ({
                                 </span>
                             </div>
                             <div className="bloqueo-texto">{bloqueo.descripcion_bloqueo}</div>
+                            <div className="bloqueo-respuesta">
+                                Respuesta: {bloqueo.respuesta_cliente || 'Sin respuesta'}
+                            </div>
                             <div className="bloqueo-actions">
                                 <span className={`bloqueo-status ${bloqueo.estado_bloqueado ? 'active' : 'resolved'}`}>
                                     {bloqueo.estado_bloqueado ? 'Bloqueado' : 'Resuelto'}

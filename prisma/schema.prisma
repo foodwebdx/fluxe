@@ -39,6 +39,7 @@ model bloqueos_estado {
   id_historial       Int
   id_usuario         Int
   descripcion_bloqueo String
+  respuesta_cliente  String?
   fecha_hora_bloqueo DateTime                @default(now()) @db.Timestamp(6)
   estado_bloqueado   Boolean                 @default(true)
   historial_estados_orden historial_estados_orden @relation(fields: [id_historial], references: [id_historial], onDelete: Cascade, onUpdate: NoAction, map: "fk_bloqueos_historial")

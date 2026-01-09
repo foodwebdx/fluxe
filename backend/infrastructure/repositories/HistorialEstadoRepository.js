@@ -82,6 +82,7 @@ class HistorialEstadoRepository {
                         select: {
                             id_bloqueo: true,
                             descripcion_bloqueo: true,
+                            respuesta_cliente: true,
                             fecha_hora_bloqueo: true,
                             estado_bloqueado: true,
                             usuarios: {
@@ -134,6 +135,7 @@ class HistorialEstadoRepository {
                         select: {
                             id_bloqueo: true,
                             descripcion_bloqueo: true,
+                            respuesta_cliente: true,
                             fecha_hora_bloqueo: true,
                             estado_bloqueado: true,
                             usuarios: {
@@ -214,6 +216,7 @@ class HistorialEstadoRepository {
                         select: {
                             id_bloqueo: true,
                             descripcion_bloqueo: true,
+                            respuesta_cliente: true,
                             fecha_hora_bloqueo: true,
                             estado_bloqueado: true
                         }
