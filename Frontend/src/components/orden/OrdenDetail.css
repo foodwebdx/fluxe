@@ -337,6 +337,12 @@
     margin-bottom: 0.5rem;
 }
 
+.bloqueo-respuesta {
+    font-size: 0.8rem;
+    color: #334155;
+    margin-bottom: 0.5rem;
+}
+
 .bloqueo-actions {
     display: flex;
     align-items: center;

@@ -141,9 +141,10 @@ class WhatsAppWebhookController {
                         return res.status(200).send('OK');
                     }
 
-                    if (normalized === 'si') {
-                        await this.bloqueoRepository.update(bloqueoId, { estado_bloqueado: false });
-                    }
+                    await this.bloqueoRepository.update(bloqueoId, {
+                        estado_bloqueado: normalized !== 'si',
+                        respuesta_cliente: normalized
+                    });
 
                     const createdAt = message.timestamp
                         ? new Date(parseInt(message.timestamp, 10) * 1000)

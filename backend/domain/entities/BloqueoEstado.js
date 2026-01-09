@@ -7,6 +7,7 @@ class BloqueoEstado extends BaseEntity {
         this.id_historial = data.id_historial;
         this.id_usuario = data.id_usuario;
         this.descripcion_bloqueo = data.descripcion_bloqueo;
+        this.respuesta_cliente = data.respuesta_cliente || null;
         this.fecha_hora_bloqueo = data.fecha_hora_bloqueo || new Date();
         this.estado_bloqueado = data.estado_bloqueado ?? true;
     }
@@ -39,6 +40,7 @@ class BloqueoEstado extends BaseEntity {
             id_historial: this.id_historial,
             id_usuario: this.id_usuario,
             descripcion_bloqueo: this.descripcion_bloqueo,
+            respuesta_cliente: this.respuesta_cliente,
             fecha_hora_bloqueo: this.fecha_hora_bloqueo,
             estado_bloqueado: this.estado_bloqueado
         };
