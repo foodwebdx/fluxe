@@ -14,6 +14,7 @@ class Orden extends BaseEntity {
         this.fecha_estimada_entrega = data.fecha_estimada_entrega || null;
         this.fecha_cierre = data.fecha_cierre || null;
         this.notas_orden = data.notas_orden || null;
+        this.respuesta_cliente_cierre = data.respuesta_cliente_cierre || null;
 
         // Relaciones (si vienen incluidas)
         this.cliente = data.clientes || data.cliente || null;
@@ -65,6 +66,7 @@ class Orden extends BaseEntity {
             fecha_estimada_entrega: this.fecha_estimada_entrega,
             fecha_cierre: this.fecha_cierre,
             notas_orden: this.notas_orden,
+            respuesta_cliente_cierre: this.respuesta_cliente_cierre,
             cliente: this.cliente,
             producto: this.producto,
             flujo: this.flujo,

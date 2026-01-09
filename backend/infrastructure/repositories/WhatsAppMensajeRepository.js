@@ -163,6 +163,31 @@ class WhatsAppMensajeRepository {
         }
     }
 
+    async findLatestInboundByOrden(idOrden, { excludeContextPrefix } = {}) {
+        try {
+            const where = {
+                id_orden: parseInt(idOrden),
+                direction: 'inbound'
+            };
+
+            if (excludeContextPrefix) {
+                where.NOT = {
+                    conversation_id: {
+                        startsWith: excludeContextPrefix
+                    }
+                };
+            }
+
+            return await this.getPrisma().whatsapp_mensajes.findFirst({
+                where,
+                orderBy: { created_at: 'desc' }
+            });
+        } catch (error) {
+            console.error('Error en findLatestInboundByOrden:', error);
+            throw error;
+        }
+    }
+
     async findAll({ phoneNumber, direction, limit } = {}) {
         try {
             const where = {};

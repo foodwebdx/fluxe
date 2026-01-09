@@ -226,6 +226,14 @@ const OrdenInfoCard = ({ orden, isInFinalState, onFechaEntregaChange, readOnly =
                         <div className="info-value">{formatDate(orden.fecha_cierre)}</div>
                     </div>
                 )}
+
+                {/* Respuesta del cliente - Solo mostrar si está en el último estado */}
+                {isInFinalState && (
+                    <div className="info-section">
+                        <div className="info-label">💬 Respuesta del cliente</div>
+                        <div className="info-value">{orden.respuesta_cliente_cierre || 'Sin respuesta aun'}</div>
+                    </div>
+                )}
             </div>
 
             {/* Notas */}
