@@ -27,3 +27,7 @@ body {
   align-items: center;
   justify-content: center;
 }
+
+.icon-delete {
+  color: #000;
+}

@@ -126,6 +126,7 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 12px;
   flex-shrink: 0;
+  color: #fff;
 }
 
 .stat-content {

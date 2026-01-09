@@ -291,7 +291,7 @@ const ComentariosSection = ({
                                                         title="Eliminar comentario"
                                                         disabled={submitting}
                                                     >
-                                                        <span className="material-icons">delete</span>
+                                                        <span className="material-icons icon-delete">delete</span>
                                                     </button>
                                                 </>
                                             )}

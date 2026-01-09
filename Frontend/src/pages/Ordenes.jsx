@@ -1509,7 +1509,7 @@ const Ordenes = ({ onVerOrden }) => {
                                       onClick={() => handleDeleteEvidencia(evidencia.id_evidencia)}
                                       title="Eliminar evidencia"
                                     >
-                                      <span className="material-icons">delete</span>
+                                      <span className="material-icons icon-delete">delete</span>
                                     </button>
                                   </div>
                                 </div>

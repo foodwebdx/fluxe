@@ -278,7 +278,7 @@ const EvidenciasSection = ({
                                         title="Eliminar evidencia"
                                         disabled={uploading}
                                     >
-                                        <span className="material-icons">delete</span>
+                                        <span className="material-icons icon-delete">delete</span>
                                     </button>
                                 )}
                             </div>
