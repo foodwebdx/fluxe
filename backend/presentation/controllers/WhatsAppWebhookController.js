@@ -4,10 +4,10 @@ const WhatsAppService = require('../../infrastructure/services/WhatsAppService')
 const BloqueoEstadoRepository = require('../../infrastructure/repositories/BloqueoEstadoRepository');
 
 const getMessageBody = (message) => {
-    if (message?.kapso?.content) return message.kapso.content;
-    if (message?.text?.body) return message.text.body;
     if (message?.interactive?.button_reply?.title) return message.interactive.button_reply.title;
     if (message?.interactive?.list_reply?.title) return message.interactive.list_reply.title;
+    if (message?.text?.body) return message.text.body;
+    if (message?.kapso?.content) return message.kapso.content;
     return null;
 };
 
