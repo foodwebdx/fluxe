@@ -63,6 +63,39 @@ class WhatsAppMensajeRepository {
         }
     }
 
+    async findLastOutboundByPhoneAndContextPrefix(phoneNumber, prefix) {
+        try {
+            return await this.getPrisma().whatsapp_mensajes.findFirst({
+                where: {
+                    phone_number: phoneNumber,
+                    direction: 'outbound',
+                    conversation_id: {
+                        startsWith: prefix
+                    }
+                },
+                orderBy: { created_at: 'desc' }
+            });
+        } catch (error) {
+            console.error('Error en findLastOutboundByPhoneAndContextPrefix:', error);
+            throw error;
+        }
+    }
+
+    async findFirstInboundByContext(contextId) {
+        try {
+            return await this.getPrisma().whatsapp_mensajes.findFirst({
+                where: {
+                    direction: 'inbound',
+                    conversation_id: contextId
+                },
+                orderBy: { created_at: 'asc' }
+            });
+        } catch (error) {
+            console.error('Error en findFirstInboundByContext:', error);
+            throw error;
+        }
+    }
+
     async findByOrden(idOrden) {
         try {
             return await this.getPrisma().whatsapp_mensajes.findMany({
