@@ -193,27 +193,29 @@ class AlertasService {
                         ...resultadoEmail
                     });
                 } catch (error) {
-                    console.erroórdenes vencidas, críticas y altas)
-            if (admin.telefono) {
-                const ordenesUrgentes = ordenes.filter(o => 
-                    o.nivel_urgencia === 'VENCIDO' || 
-                    o.nivel_urgencia === 'CRITICO' || 
-                   
+                    console.error(`Error enviando email a ${admin.email}:`, error);
+                    resultados.errores.push({
+                        tipo: 'email',
+                        admin: admin.nombre,
+                        email: admin.email,
                         error: error.message
                     });
                 }
             }
 
-            // Enviar WhatsApp (solo órdenes críticas y altas)
+            // Enviar WhatsApp (ordenes vencidas, criticas y altas)
             if (admin.telefono) {
-                const ordenesUrgentes = ordenes.filter(o => 
-                    o.nivel_urgencia === 'CRITICO' || o.nivel_urgencia === 'ALTO'
+                const ordenesUrgentes = ordenes.filter(
+                    (orden) =>
+                        orden.nivel_urgencia === 'VENCIDO' ||
+                        orden.nivel_urgencia === 'CRITICO' ||
+                        orden.nivel_urgencia === 'ALTO'
                 );
 
                 for (const orden of ordenesUrgentes) {
                     try {
-                        const mensaje = this.generaajeAlerta(orden);
-                        const resultadoWsp = await this.whatsappService.sendTextMessage(
+                        const mensaje = this.generarMensajeAlerta(orden);
+                        const resultadoWsp = await whatsappService.sendTextMessage(
                             admin.telefono,
                             mensaje
                         );
