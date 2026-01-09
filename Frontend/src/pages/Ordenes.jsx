@@ -942,7 +942,7 @@ const Ordenes = ({ onVerOrden }) => {
                           {orden.estado_actual?.nombre_estado || 'Sin estado'}
                         </span>
                       </td>
-                      <td>{formatDate(orden.fecha_creacion)}</td>
+                      <td>{formatDate(orden.fecha_estimada_entrega)}</td>
                       <td>
                         <button className="btn-sm btn-primary" onClick={() => onVerOrden && onVerOrden(orden.id_orden)}>Ver</button>
                         <button className="btn-sm btn-danger" onClick={() => handleDelete(orden.id_orden)}>Eliminar</button>

@@ -207,6 +207,43 @@ class UsuarioRepository extends IUsuarioRepository {
       throw error;
     }
   }
+
+  async findAdmins() {
+    try {
+      const admins = await this.getPrisma().usuarios.findMany({
+        where: {
+          usuarios_roles: {
+            some: {
+              roles: {
+                nombre_rol: {
+                  in: ['Admin', 'Administrador', 'ADMIN', 'ADMINISTRADOR']
+                }
+              }
+            }
+          }
+        },
+        select: {
+          id_usuario: true,
+          nombre: true,
+          email: true,
+          telefono: true,
+          usuario_login: true,
+          usuarios_roles: {
+            select: {
+              roles: {
+                select: baseRoleSelect,
+              },
+            },
+          },
+        },
+      });
+
+      return admins.map((admin) => this.formatUsuario(admin));
+    } catch (error) {
+      console.error('Error en findAdmins:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = UsuarioRepository;

@@ -16,6 +16,7 @@ const usuarioRolRoutes = require('./usuarioRol.routes');
 const authRoutes = require('./auth.routes');
 const webhookRoutes = require('./webhook.routes');
 const whatsappMensajesRoutes = require('./whatsappMensajes.routes');
+const alertasRoutes = require('./alertas.routes');
 
 const router = express.Router();
 
@@ -221,5 +222,6 @@ router.use('/usuarios-roles', usuarioRolRoutes);
 router.use('/auth', authRoutes);
 router.use('/webhooks', webhookRoutes);
 router.use('/whatsapp-mensajes', whatsappMensajesRoutes);
+router.use('/alertas', alertasRoutes);
 
 module.exports = router;

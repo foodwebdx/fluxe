@@ -5,6 +5,7 @@ const errorHandler = require('./presentation/middlewares/errorHandler');
 const notFound = require('./presentation/middlewares/notFound');
 const requestLogger = require('./presentation/middlewares/requestLogger');
 const { getDatabase } = require('./infrastructure/database/db');
+const { getAlertasScheduler } = require('./infrastructure/schedulers/AlertasScheduler');
 
 const app = express();
 
@@ -12,7 +13,8 @@ const app = express();
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'https://fluxe-sepia.vercel.app',
   process.env.FRONTEND_URL_DEV,
-  process.env.FRONTEND_URL_DEV_ALT
+  process.env.FRONTEND_URL_DEV_ALT,
+  'http://localhost:5173'
 ].filter(Boolean);
 
 app.use((req, res, next) => {
@@ -98,6 +100,11 @@ if (process.env.NODE_ENV !== 'production') {
         console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
         console.log(`📝 Health check: http://localhost:${PORT}/health`);
         console.log(`🔗 API base: http://localhost:${PORT}/api`);
+        
+        // Iniciar sistema de alertas
+        console.log('\n⏰ Iniciando sistema de alertas...');
+        const alertasScheduler = getAlertasScheduler();
+        alertasScheduler.start();
       });
     } catch (error) {
       console.error('Error al iniciar el servidor:', error);
@@ -108,12 +115,16 @@ if (process.env.NODE_ENV !== 'production') {
   // Graceful shutdown
   process.on('SIGTERM', async () => {
     console.log('SIGTERM recibido, cerrando servidor...');
+    const alertasScheduler = getAlertasScheduler();
+    alertasScheduler.stop();
     await dbConnection.disconnect();
     process.exit(0);
   });
 
   process.on('SIGINT', async () => {
     console.log('SIGINT recibido, cerrando servidor...');
+    const alertasScheduler = getAlertasScheduler();
+    alertasScheduler.stop();
     await dbConnection.disconnect();
     process.exit(0);
   });

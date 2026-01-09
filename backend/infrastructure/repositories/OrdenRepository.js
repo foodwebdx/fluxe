@@ -79,12 +79,25 @@ class OrdenRepository extends IOrdenRepository {
         }
     }
 
-    async findAll() {
+    async findAll(options = {}) {
         try {
-            const ordenes = await this.getPrisma().ordenes.findMany({
+            const queryOptions = {
                 include: this.getIncludeRelations(),
                 orderBy: { fecha_creacion: 'desc' }
-            });
+            };
+
+            // Si se pasan opciones adicionales (where, include, etc.)
+            if (options.where) {
+                queryOptions.where = options.where;
+            }
+            if (options.include) {
+                queryOptions.include = { ...queryOptions.include, ...options.include };
+            }
+            if (options.orderBy) {
+                queryOptions.orderBy = options.orderBy;
+            }
+
+            const ordenes = await this.getPrisma().ordenes.findMany(queryOptions);
 
             return ordenes.map(orden => new Orden(orden));
         } catch (error) {
