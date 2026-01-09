@@ -7,6 +7,14 @@ const ordenController = new OrdenController();
 // GET /api/ordenes/dashboard/metrics - Obtener métricas del dashboard
 router.get('/dashboard/metrics', (req, res) => ordenController.getDashboardMetrics(req, res));
 
+// GET /api/ordenes/kpis/tiempo-promedio - Obtener tiempo promedio de finalización
+// Query param: ?id_flujo=X para filtrar por flujo
+router.get('/kpis/tiempo-promedio', (req, res) => ordenController.getTiempoPromedio(req, res));
+
+// GET /api/ordenes/kpis/satisfaccion - Obtener métricas de satisfacción
+// Query param: ?id_flujo=X para filtrar por flujo
+router.get('/kpis/satisfaccion', (req, res) => ordenController.getSatisfaccion(req, res));
+
 // GET /api/ordenes - Obtener todas las órdenes (con filtros opcionales)
 // Query params: ?id_cliente=X, ?id_estado=Y, ?id_flujo=Z
 router.get('/', (req, res) => ordenController.getAll(req, res));

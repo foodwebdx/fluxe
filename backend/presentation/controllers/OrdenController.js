@@ -5,6 +5,8 @@ const UpdateOrdenUseCase = require('../../application/usecases/orden/UpdateOrden
 const CambiarEstadoOrdenUseCase = require('../../application/usecases/orden/CambiarEstadoOrdenUseCase');
 const DeleteOrdenUseCase = require('../../application/usecases/orden/DeleteOrdenUseCase');
 const GetDashboardMetricsUseCase = require('../../application/usecases/orden/GetDashboardMetricsUseCase');
+const GetTiempoPromedioUseCase = require('../../application/usecases/orden/GetTiempoPromedioUseCase');
+const GetSatisfaccionUseCase = require('../../application/usecases/orden/GetSatisfaccionUseCase');
 const OrdenRepository = require('../../infrastructure/repositories/OrdenRepository');
 
 class OrdenController {
@@ -16,6 +18,8 @@ class OrdenController {
         this.cambiarEstadoUseCase = new CambiarEstadoOrdenUseCase();
         this.deleteOrdenUseCase = new DeleteOrdenUseCase();
         this.getDashboardMetricsUseCase = new GetDashboardMetricsUseCase();
+        this.getTiempoPromedioUseCase = new GetTiempoPromedioUseCase();
+        this.getSatisfaccionUseCase = new GetSatisfaccionUseCase();
         this.ordenRepository = new OrdenRepository();
     }
 
@@ -255,6 +259,48 @@ class OrdenController {
             return res.status(500).json({
                 success: false,
                 message: error.message || 'Error al obtener métricas del dashboard',
+            });
+        }
+    }
+
+    async getTiempoPromedio(req, res) {
+        try {
+            const { id_flujo } = req.query;
+            const params = {};
+            
+            if (id_flujo) {
+                params.id_flujo = parseInt(id_flujo);
+            }
+
+            const result = await this.getTiempoPromedioUseCase.execute(params);
+
+            return res.status(200).json(result);
+        } catch (error) {
+            console.error('Error en getTiempoPromedio:', error);
+            return res.status(500).json({
+                success: false,
+                message: error.message || 'Error al obtener tiempo promedio',
+            });
+        }
+    }
+
+    async getSatisfaccion(req, res) {
+        try {
+            const { id_flujo } = req.query;
+            const params = {};
+            
+            if (id_flujo) {
+                params.id_flujo = parseInt(id_flujo);
+            }
+
+            const result = await this.getSatisfaccionUseCase.execute(params);
+
+            return res.status(200).json(result);
+        } catch (error) {
+            console.error('Error en getSatisfaccion:', error);
+            return res.status(500).json({
+                success: false,
+                message: error.message || 'Error al obtener métricas de satisfacción',
             });
         }
     }

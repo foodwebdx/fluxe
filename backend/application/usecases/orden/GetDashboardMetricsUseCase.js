@@ -12,35 +12,84 @@ class GetDashboardMetricsUseCase {
         return this.prisma;
     }
 
+    /**
+     * Obtiene un mapa de flujos con su último estado
+     * @returns {Promise<Map>} Map(id_flujo -> id_estado_final)
+     */
+    async obtenerEstadosFinalesPorFlujo() {
+        const prisma = this.getPrisma();
+        
+        const flujos = await prisma.flujos.findMany({
+            include: {
+                flujos_estados: {
+                    orderBy: {
+                        posicion: 'desc'
+                    },
+                    take: 1
+                }
+            }
+        });
+
+        const estadosFinales = new Map();
+        flujos.forEach(flujo => {
+            if (flujo.flujos_estados && flujo.flujos_estados.length > 0) {
+                estadosFinales.set(flujo.id_flujo, flujo.flujos_estados[0].id_estado);
+            }
+        });
+
+        return estadosFinales;
+    }
+
     async execute() {
         try {
             const prisma = this.getPrisma();
-            // Obtener totales principaless
+            
+            // Obtener estados finales de cada flujo
+            const estadosFinales = await this.obtenerEstadosFinalesPorFlujo();
+            
+            // Obtener todas las órdenes para clasificarlas correctamente
+            const todasLasOrdenes = await prisma.ordenes.findMany({
+                select: {
+                    id_orden: true,
+                    id_flujo: true,
+                    id_estado_actual: true,
+                    fecha_cierre: true,
+                    fecha_creacion: true
+                }
+            });
+
+            // Clasificar órdenes en activas y cerradas
+            const ordenesActivas = todasLasOrdenes.filter(orden => {
+                const estadoFinal = estadosFinales.get(orden.id_flujo);
+                const estaEnEstadoFinal = orden.id_estado_actual === estadoFinal;
+                const tieneFechaCierre = orden.fecha_cierre !== null;
+                
+                // Una orden está activa si NO está en estado final Y NO tiene fecha de cierre
+                return !estaEnEstadoFinal && !tieneFechaCierre;
+            });
+
+            const ordenesCerradas = todasLasOrdenes.filter(orden => {
+                const estadoFinal = estadosFinales.get(orden.id_flujo);
+                const estaEnEstadoFinal = orden.id_estado_actual === estadoFinal;
+                const tieneFechaCierre = orden.fecha_cierre !== null;
+                
+                // Una orden está cerrada si está en estado final Y tiene fecha de cierre
+                return estaEnEstadoFinal && tieneFechaCierre;
+            });
+
+            // Obtener totales principales
             const [
-                totalOrdenes,
                 totalClientes,
                 totalProductos,
-                ordenesActivas,
                 ordenesPorEstado,
                 ordenesPorMes,
-                ordenesPorSemana,
-                ordenesCerradas
+                ordenesPorSemana
             ] = await Promise.all([
-                // Total de órdenes
-                prisma.ordenes.count(),
-
                 // Total de clientes
                 prisma.clientes.count(),
 
                 // Total de productos
                 prisma.productos.count(),
-
-                // Órdenes activas (sin fecha de cierre)
-                prisma.ordenes.count({
-                    where: {
-                        fecha_cierre: null
-                    }
-                }),
 
                 // Distribución por estado
                 prisma.ordenes.groupBy({
@@ -59,11 +108,17 @@ class GetDashboardMetricsUseCase {
                 this.getOrdenesPorMes(),
 
                 // Actividad de la semana actual
-                this.getActividadSemanal(),
-
-                // Órdenes cerradas en el mes actual
-                this.getOrdenesCerradasMesActual()
+                this.getActividadSemanal()
             ]);
+
+            // Órdenes cerradas en el mes actual
+            const inicioMes = new Date();
+            inicioMes.setDate(1);
+            inicioMes.setHours(0, 0, 0, 0);
+            
+            const ordenesCerradasMesActual = ordenesCerradas.filter(orden => 
+                orden.fecha_cierre && new Date(orden.fecha_cierre) >= inicioMes
+            ).length;
 
             // Obtener nombres de estados para la distribución
             const estadosMap = await this.getEstadosMap();
@@ -73,7 +128,7 @@ class GetDashboardMetricsUseCase {
             }));
 
             // Calcular porcentaje de cambio de órdenes activas
-            const cambioOrdenesActivas = await this.calcularCambioOrdenesActivas();
+            const cambioOrdenesActivas = await this.calcularCambioOrdenesActivas(estadosFinales);
             
             // Calcular porcentaje de cambio de clientes
             const cambioClientes = await this.calcularCambioClientes();
@@ -82,11 +137,11 @@ class GetDashboardMetricsUseCase {
                 success: true,
                 data: {
                     totales: {
-                        ordenes: totalOrdenes,
+                        ordenes: todasLasOrdenes.length,
                         clientes: totalClientes,
                         productos: totalProductos,
-                        ordenesActivas: ordenesActivas,
-                        ordenesCerradas: ordenesCerradas
+                        ordenesActivas: ordenesActivas.length,
+                        ordenesCerradas: ordenesCerradasMesActual
                     },
                     cambios: {
                         ordenesActivas: cambioOrdenesActivas,
@@ -180,7 +235,7 @@ class GetDashboardMetricsUseCase {
         return map;
     }
 
-    async calcularCambioOrdenesActivas() {
+    async calcularCambioOrdenesActivas(estadosFinales) {
         const prisma = this.getPrisma();
         const hoy = new Date();
         const hace30Dias = new Date();
@@ -188,25 +243,41 @@ class GetDashboardMetricsUseCase {
         const hace60Dias = new Date();
         hace60Dias.setDate(hace60Dias.getDate() - 60);
 
-        const [ordenesUltimos30, ordenesEntre30y60] = await Promise.all([
-            prisma.ordenes.count({
-                where: {
-                    fecha_creacion: {
-                        gte: hace30Dias
-                    },
-                    fecha_cierre: null
+        // Obtener órdenes de los últimos 60 días
+        const ordenesRecientes = await prisma.ordenes.findMany({
+            where: {
+                fecha_creacion: {
+                    gte: hace60Dias
                 }
-            }),
-            prisma.ordenes.count({
-                where: {
-                    fecha_creacion: {
-                        gte: hace60Dias,
-                        lt: hace30Dias
-                    },
-                    fecha_cierre: null
-                }
-            })
-        ]);
+            },
+            select: {
+                id_flujo: true,
+                id_estado_actual: true,
+                fecha_cierre: true,
+                fecha_creacion: true
+            }
+        });
+
+        // Filtrar órdenes activas de los últimos 30 días
+        const ordenesUltimos30 = ordenesRecientes.filter(orden => {
+            const estadoFinal = estadosFinales.get(orden.id_flujo);
+            const estaEnEstadoFinal = orden.id_estado_actual === estadoFinal;
+            const tieneFechaCierre = orden.fecha_cierre !== null;
+            const esReciente = new Date(orden.fecha_creacion) >= hace30Dias;
+            
+            return esReciente && !estaEnEstadoFinal && !tieneFechaCierre;
+        }).length;
+
+        // Filtrar órdenes activas entre 30 y 60 días
+        const ordenesEntre30y60 = ordenesRecientes.filter(orden => {
+            const estadoFinal = estadosFinales.get(orden.id_flujo);
+            const estaEnEstadoFinal = orden.id_estado_actual === estadoFinal;
+            const tieneFechaCierre = orden.fecha_cierre !== null;
+            const fechaCreacion = new Date(orden.fecha_creacion);
+            const estaEnRango = fechaCreacion >= hace60Dias && fechaCreacion < hace30Dias;
+            
+            return estaEnRango && !estaEnEstadoFinal && !tieneFechaCierre;
+        }).length;
 
         if (ordenesEntre30y60 === 0) return 0;
         
@@ -235,21 +306,6 @@ class GetDashboardMetricsUseCase {
         if (totalClientes === 0) return 0;
 
         return ((clientesNuevos / totalClientes) * 100).toFixed(1);
-    }
-
-    async getOrdenesCerradasMesActual() {
-        const prisma = this.getPrisma();
-        const inicioMes = new Date();
-        inicioMes.setDate(1);
-        inicioMes.setHours(0, 0, 0, 0);
-
-        return await prisma.ordenes.count({
-            where: {
-                fecha_cierre: {
-                    gte: inicioMes
-                }
-            }
-        });
     }
 }
 

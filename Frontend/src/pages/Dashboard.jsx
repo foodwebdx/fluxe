@@ -1,38 +1,82 @@
 import { useState, useEffect } from 'react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { apiUrl } from '../config/api';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const [metricas, setMetricas] = useState(null);
+  const [tiempoPromedio, setTiempoPromedio] = useState(null);
+  const [satisfaccion, setSatisfaccion] = useState(null);
+  const [flujos, setFlujos] = useState([]);
+  const [flujoSeleccionado, setFlujoSeleccionado] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    cargarMetricas();
+    cargarDatos();
   }, []);
 
-  const cargarMetricas = async () => {
+  useEffect(() => {
+    cargarKPIs();
+  }, [flujoSeleccionado]);
+
+  const cargarDatos = async () => {
     try {
       setLoading(true);
-      const response = await fetch(apiUrl('/api/ordenes/dashboard/metrics'));
+      const [metricasRes, flujosRes] = await Promise.all([
+        fetch(apiUrl('/api/ordenes/dashboard/metrics')),
+        fetch(apiUrl('/api/flujos'))
+      ]);
       
-      if (!response.ok) {
-        throw new Error('Error al cargar las métricas del dashboard');
+      if (!metricasRes.ok || !flujosRes.ok) {
+        throw new Error('Error al cargar los datos del dashboard');
       }
 
-      const data = await response.json();
+      const metricasData = await metricasRes.json();
+      const flujosData = await flujosRes.json();
       
-      if (data.success) {
-        setMetricas(data.data);
-      } else {
-        throw new Error(data.message || 'Error al cargar las métricas');
+      if (metricasData.success) {
+        setMetricas(metricasData.data);
       }
+      
+      if (flujosData.success) {
+        setFlujos(flujosData.data);
+      }
+
+      // Cargar KPIs generales (sin filtro)
+      await cargarKPIs();
     } catch (err) {
-      console.error('Error al cargar métricas:', err);
+      console.error('Error al cargar datos:', err);
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const cargarKPIs = async () => {
+    try {
+      const filtro = flujoSeleccionado ? `?id_flujo=${flujoSeleccionado}` : '';
+      
+      const [tiempoRes, satisfaccionRes] = await Promise.all([
+        fetch(apiUrl(`/api/ordenes/kpis/tiempo-promedio${filtro}`)),
+        fetch(apiUrl(`/api/ordenes/kpis/satisfaccion${filtro}`))
+      ]);
+
+      if (tiempoRes.ok) {
+        const tiempoData = await tiempoRes.json();
+        if (tiempoData.success) {
+          setTiempoPromedio(tiempoData.data);
+        }
+      }
+
+      if (satisfaccionRes.ok) {
+        const satisfaccionData = await satisfaccionRes.json();
+        if (satisfaccionData.success) {
+          setSatisfaccion(satisfaccionData.data);
+        }
+      }
+    } catch (err) {
+      console.error('Error al cargar KPIs:', err);
     }
   };
 
@@ -75,6 +119,35 @@ const Dashboard = () => {
     metricas.actividadSemanal.forEach(item => {
       csv += `${item.name},${item.actividad}\n`;
     });
+    csv += '\n';
+
+    // Agregar KPIs si están disponibles
+    if (tiempoPromedio && tiempoPromedio.total_ordenes > 0) {
+      csv += 'TIEMPO PROMEDIO DE FINALIZACIÓN\n';
+      csv += `Promedio General (días),${tiempoPromedio.promedio_general_dias}\n`;
+      csv += `Promedio General (horas),${tiempoPromedio.promedio_general_horas.toFixed(2)}\n`;
+      csv += `Total Órdenes,${tiempoPromedio.total_ordenes}\n\n`;
+      csv += 'Por Flujo\n';
+      csv += 'Flujo,Promedio (días),Órdenes\n';
+      tiempoPromedio.por_flujo.forEach(f => {
+        csv += `${f.nombre_flujo},${f.promedio_dias},${f.total_ordenes}\n`;
+      });
+      csv += '\n';
+    }
+
+    if (satisfaccion && satisfaccion.total_encuestas > 0) {
+      csv += 'SATISFACCIÓN DEL CLIENTE\n';
+      csv += `Satisfacción General,${satisfaccion.promedios_generales.satisfaccion_general}\n`;
+      csv += `Satisfacción Servicio,${satisfaccion.promedios_generales.satisfaccion_servicio}\n`;
+      csv += `Satisfacción Tiempo,${satisfaccion.promedios_generales.satisfaccion_tiempo}\n`;
+      csv += `Total Encuestas,${satisfaccion.total_encuestas}\n\n`;
+      csv += 'Por Flujo\n';
+      csv += 'Flujo,General,Servicio,Tiempo,Encuestas\n';
+      satisfaccion.por_flujo.forEach(f => {
+        csv += `${f.nombre_flujo},${f.promedios.satisfaccion_general},${f.promedios.satisfaccion_servicio},${f.promedios.satisfaccion_tiempo},${f.total_encuestas}\n`;
+      });
+      csv += '\n';
+    }
 
     // Agregar BOM UTF-8 para que Excel reconozca las tildes correctamente
     const BOM = '\uFEFF';
@@ -94,7 +167,14 @@ const Dashboard = () => {
 
     const dataExport = {
       fecha_generacion: new Date().toISOString(),
-      metricas: metricas
+      metricas: metricas,
+      kpis: {
+        tiempo_promedio: tiempoPromedio,
+        satisfaccion: satisfaccion
+      },
+      filtro_aplicado: flujoSeleccionado ? 
+        flujos.find(f => f.id_flujo === parseInt(flujoSeleccionado))?.nombre_flujo : 
+        'Todos los flujos'
     };
 
     const blob = new Blob([JSON.stringify(dataExport, null, 2)], { type: 'application/json' });
@@ -142,13 +222,27 @@ const Dashboard = () => {
             <h1>Dashboard</h1>
             <p className="subtitle">Bienvenido a tu panel de control</p>
           </div>
-          <div className="export-buttons">
-            <button onClick={exportarCSV} className="btn-export" title="Exportar a CSV">
-              📊 Exportar CSV
-            </button>
-            <button onClick={exportarJSON} className="btn-export" title="Exportar a JSON">
-              📄 Exportar JSON
-            </button>
+          <div className="header-actions">
+            <select 
+              value={flujoSeleccionado} 
+              onChange={(e) => setFlujoSeleccionado(e.target.value)}
+              className="flujo-filter"
+            >
+              <option value="">Todos los flujos</option>
+              {flujos.map(flujo => (
+                <option key={flujo.id_flujo} value={flujo.id_flujo}>
+                  {flujo.nombre_flujo}
+                </option>
+              ))}
+            </select>
+            <div className="export-buttons">
+              <button onClick={exportarCSV} className="btn-export" title="Exportar a CSV">
+                📊 Exportar CSV
+              </button>
+              <button onClick={exportarJSON} className="btn-export" title="Exportar a JSON">
+                📄 Exportar JSON
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -195,6 +289,120 @@ const Dashboard = () => {
             <span className="stat-change neutral">
               Este mes
             </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Nuevas KPIs */}
+      <div className="kpis-section">
+        <h2 className="section-title">KPIs de Rendimiento</h2>
+        
+        <div className="kpis-grid">
+          {/* Tiempo Promedio de Finalización */}
+          <div className="kpi-card">
+            <h3>⏱️ Tiempo Promedio de Finalización</h3>
+            {tiempoPromedio && tiempoPromedio.total_ordenes > 0 ? (
+              <>
+                <div className="kpi-summary">
+                  <div className="kpi-main">
+                    <span className="kpi-value">{tiempoPromedio.promedio_general_dias}</span>
+                    <span className="kpi-unit">días</span>
+                  </div>
+                  <div className="kpi-secondary">
+                    <span>{tiempoPromedio.promedio_general_horas.toFixed(1)} horas</span>
+                  </div>
+                  <div className="kpi-meta">
+                    {tiempoPromedio.total_ordenes} órdenes cerradas
+                  </div>
+                </div>
+                
+                {tiempoPromedio.por_flujo.length > 1 && (
+                  <div className="kpi-breakdown">
+                    <h4>Por Flujo</h4>
+                    {tiempoPromedio.por_flujo.map((flujo, index) => (
+                      <div key={index} className="breakdown-item">
+                        <span className="breakdown-label">{flujo.nombre_flujo}</span>
+                        <span className="breakdown-value">
+                          {flujo.promedio_dias} días
+                          <small> ({flujo.total_ordenes} órdenes)</small>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="kpi-empty">
+                <p>📭 No hay órdenes cerradas {flujoSeleccionado ? 'para el flujo seleccionado' : 'disponibles'}</p>
+                <small>Las estadísticas aparecerán cuando haya órdenes finalizadas</small>
+              </div>
+            )}
+          </div>
+
+          {/* Satisfacción */}
+          <div className="kpi-card">
+            <h3>⭐ Satisfacción del Cliente</h3>
+            {satisfaccion && satisfaccion.total_encuestas > 0 ? (
+              <>
+                <div className="kpi-summary">
+                  <div className="satisfaction-scores">
+                    <div className="score-item">
+                      <span className="score-label">General</span>
+                      <span className="score-value">{satisfaccion.promedios_generales.satisfaccion_general}/5</span>
+                      <div className="score-bar">
+                        <div 
+                          className="score-fill" 
+                          style={{ width: `${(satisfaccion.promedios_generales.satisfaccion_general / 5) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="score-item">
+                      <span className="score-label">Servicio</span>
+                      <span className="score-value">{satisfaccion.promedios_generales.satisfaccion_servicio}/5</span>
+                      <div className="score-bar">
+                        <div 
+                          className="score-fill" 
+                          style={{ width: `${(satisfaccion.promedios_generales.satisfaccion_servicio / 5) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="score-item">
+                      <span className="score-label">Tiempo</span>
+                      <span className="score-value">{satisfaccion.promedios_generales.satisfaccion_tiempo}/5</span>
+                      <div className="score-bar">
+                        <div 
+                          className="score-fill" 
+                          style={{ width: `${(satisfaccion.promedios_generales.satisfaccion_tiempo / 5) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="kpi-meta">
+                    {satisfaccion.total_encuestas} encuestas respondidas
+                  </div>
+                </div>
+
+                {satisfaccion.por_flujo.length > 1 && (
+                  <div className="kpi-breakdown">
+                    <h4>Por Flujo</h4>
+                    {satisfaccion.por_flujo.map((flujo, index) => (
+                      <div key={index} className="breakdown-item">
+                        <span className="breakdown-label">{flujo.nombre_flujo}</span>
+                        <span className="breakdown-value">
+                          {flujo.promedios.satisfaccion_general}/5
+                          <small> ({flujo.total_encuestas} encuestas)</small>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="kpi-empty">
+                <p>📭 No hay encuestas respondidas {flujoSeleccionado ? 'para el flujo seleccionado' : 'disponibles'}</p>
+                <small>Las estadísticas aparecerán cuando los clientes completen encuestas</small>
+              </div>
+            )}
           </div>
         </div>
       </div>
