@@ -188,6 +188,21 @@ class HistorialEstadoRepository {
         }
     }
 
+    async findLatestByOrdenAndEstado(idOrden, idEstado) {
+        try {
+            return await this.getPrisma().historial_estados_orden.findFirst({
+                where: {
+                    id_orden: parseInt(idOrden),
+                    id_estado: parseInt(idEstado)
+                },
+                orderBy: { fecha_hora_cambio: 'desc' }
+            });
+        } catch (error) {
+            console.error('Error en findLatestByOrdenAndEstado:', error);
+            throw error;
+        }
+    }
+
     async findAll() {
         try {
             const historial = await this.getPrisma().historial_estados_orden.findMany({

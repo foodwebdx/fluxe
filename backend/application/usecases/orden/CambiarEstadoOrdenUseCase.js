@@ -68,10 +68,13 @@ class CambiarEstadoOrdenUseCase extends IUseCase {
                     throw new Error(`No se pueden saltar los siguientes estados obligatorios: ${nombresEstados}`);
                 }
 
-                const ultimoHistorial = await this.historialRepository.findLastByOrden(idOrden);
-                if (ultimoHistorial && ultimoHistorial.id_estado === orden.id_estado_actual) {
-                    const bloqueoActivo = await this.bloqueoRepository.findActiveByHistorial(ultimoHistorial.id_historial);
-                    if (bloqueoActivo) {
+                const historialActual = await this.historialRepository.findLatestByOrdenAndEstado(
+                    idOrden,
+                    orden.id_estado_actual
+                );
+                if (historialActual) {
+                    const bloqueoActivo = await this.bloqueoRepository.findActiveByHistorial(historialActual.id_historial);
+                    if (bloqueoActivo?.estado_bloqueado) {
                         throw new Error('No se puede avanzar de estado porque existe un bloqueo activo en el estado actual');
                     }
                 }
