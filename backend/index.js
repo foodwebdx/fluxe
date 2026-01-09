@@ -13,8 +13,7 @@ const app = express();
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'https://fluxe-sepia.vercel.app',
   process.env.FRONTEND_URL_DEV,
-  process.env.FRONTEND_URL_DEV_ALT,
-  'http://localhost:5173'
+  process.env.FRONTEND_URL_DEV_ALT
 ].filter(Boolean);
 
 app.use((req, res, next) => {
