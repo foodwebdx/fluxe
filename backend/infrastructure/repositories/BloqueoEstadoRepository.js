@@ -189,6 +189,24 @@ class BloqueoEstadoRepository {
         }
     }
 
+    async findActiveByOrdenAndEstado(idOrden, idEstado) {
+        try {
+            return await this.getPrisma().bloqueos_estado.findFirst({
+                where: {
+                    estado_bloqueado: true,
+                    historial_estados_orden: {
+                        id_orden: parseInt(idOrden),
+                        id_estado: parseInt(idEstado)
+                    }
+                },
+                orderBy: { fecha_hora_bloqueo: 'desc' }
+            });
+        } catch (error) {
+            console.error('Error en findActiveByOrdenAndEstado bloqueo:', error);
+            throw error;
+        }
+    }
+
     async findAll() {
         try {
             const bloqueos = await this.getPrisma().bloqueos_estado.findMany({
